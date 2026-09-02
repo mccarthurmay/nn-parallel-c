@@ -1,11 +1,11 @@
 #include <math.h>
 
-#include "board.h"
+#include "sigFuncs.h"
 
 // misc functions
 float sigmoid(float z){
 	// The sigmoid function
-	return 1.0f / (1.0f + expf(-x));
+	return 1.0f / (1.0f + expf(-z));
 }
 
 float sigmoid_prime(float z){
