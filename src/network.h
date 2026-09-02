@@ -1,0 +1,28 @@
+#ifndef NETWORK_H
+#define NETWORK_H
+
+typedef struct {
+    /*
+    sizes = number of neurons in respective layer of network
+
+    biases and weights are initialized randomly
+
+    first layer assumed to be input layer
+    */
+    int num_layers;
+    int *sizes;
+    float **biases;
+    float **weights;
+} Network;
+
+/*
+Build a network with num_layers layers, layer i holding sizes[i] neurons.
+Weights and biases are drawn from a Gaussian with mean 0 and variance 1.
+sizes is copied, so the caller keeps ownership of its array.
+Returns NULL if any allocation fails.
+*/
+Network *network_init(const int *sizes, int num_layers);
+
+void network_destroy(Network *this);
+
+#endif

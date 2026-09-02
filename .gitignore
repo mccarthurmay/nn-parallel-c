@@ -2,6 +2,13 @@
 *~
 !*.*
 
+# `*` above excludes directories too, and an excluded directory can never be
+# descended into, so src/ has to be re-included explicitly
+!src/
+
+# editor and build leftovers that `!*.*` would otherwise rescue
+*.swp
+*.o
 
 *.org
 *.pem
