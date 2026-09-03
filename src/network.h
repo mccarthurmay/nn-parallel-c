@@ -28,4 +28,7 @@ void matmult(const double *w, const double *a, double *result, int rows, int col
 void network_destroy(Network *this);
 void network_feedforward(const Network *net, const double *input,
                          double *output, double *scratch);
+
+void cost_derivative(const double *output_activations, const double *y
+					 double *delta, int n);
 #endif

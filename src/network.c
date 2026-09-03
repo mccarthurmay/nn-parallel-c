@@ -125,7 +125,7 @@ input = sizes[0]
 output = sizes[num_layers - 1]
 scratch = memory in use, must be 2*max(sizes) (will be imported, dont want to call malloc millions of times)
 */
-void network_feedforward(const Network *net, const double *input, double *output, double *scratch){
+void feedforward(const Network *net, const double *input, double *output, double *scratch){
     // Compute largest layer for scratch
     int maxn = 0;
     for (int i = 0; i < net->num_layers; i++){
@@ -162,4 +162,13 @@ void network_feedforward(const Network *net, const double *input, double *output
     for (int i = 0; i < net->sizes[net ->num_layers -1]; i++){
         output[i] = cur[i];
     }
+}
+
+// could be changed to inline function as it's only called by backprop
+void cost_derivative(const double *output_activations, const double *y, double *delta, int n){
+	/* modifies delta to be a vector of partial deriviatives 
+	\partial C_x /\partial a for the output activations */
+	for(int i = 0; i < n; i++) {
+		delta[i] = output_activations[i] - y[i];
+	}
 }
