@@ -3,12 +3,12 @@
 #include "sigFuncs.h"
 
 // misc functions
-float sigmoid(float z){
+double sigmoid(double z){
 	// The sigmoid function
-	return 1.0f / (1.0f + expf(-z));
+	return 1.0 / (1.0 + exp(-z));
 }
 
-float sigmoid_prime(float z){
+double sigmoid_prime(double z){
 	// Dervative of the sigmoid function
 	return sigmoid(z) * (1-sigmoid(z));
 }

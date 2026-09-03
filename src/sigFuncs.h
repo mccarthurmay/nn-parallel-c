@@ -1,2 +1,2 @@
-float sigmoid(float z);
-float sigmoid_prime(float z);
+double sigmoid(double z);
+double sigmoid_prime(double z);

@@ -25,10 +25,12 @@ Returns NULL if any allocation fails.
 Network *network_init(const int *sizes, int num_layers);
 void matmult(const double *w, const double *a, double *result, int rows, int cols);
 
-void network_destroy(Network *this);
+void network_destroy(Network *net);
 void network_feedforward(const Network *net, const double *input,
                          double *output, double *scratch);
 
-void cost_derivative(const double *output_activations, const double *y
+void cost_derivative(const double *output_activations, const double *y,
 					 double *delta, int n);
+int evaluate(const Network *net, const Dataset *data);
+
 #endif

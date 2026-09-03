@@ -7,6 +7,7 @@ Gradients are calculated using backpropagation.
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "network.h"
 #include "sigFuncs.h"
@@ -17,11 +18,11 @@ Standard normal sample (mean 0, variance 1) via Box-Muller, matching
 np.random.randn in the reference implementation. Callers are responsible
 for seeding with srand() once at program start.
 */
-static float randn(void){
+static double randn(void){
     // shift off the endpoints so u1 is in (0,1) and logf never sees 0
-    float u1 = (rand() + 1.0f) / (RAND_MAX + 2.0f);
-    float u2 = (rand() + 1.0f) / (RAND_MAX + 2.0f);
-    return sqrtf(-2.0f * logf(u1)) * cosf(2.0f * (float)PI * u2);
+    float u1 = (rand() + 1.0) / (RAND_MAX + 2.0);
+    float u2 = (rand() + 1.0) / (RAND_MAX + 2.0);
+    return sqrt(-2.0 * log(u1)) * cos(2.0 * PI * u2);
 }
 
 // Network constructor
@@ -41,9 +42,16 @@ Network *network_init(const int *sizes, int num_layers){
     }
     memcpy(this->sizes, sizes, num_layers * sizeof(int));
     
+
+    this->max_size = 0;
+    for (int i = 0; i < num_layers; i++){
+        if (sizes[i] > this->max_size){
+            this->max_size = sizes[i];
+        }
+    }
     // input layer doesnt have weights or biases, only output (receiving) layers
-    this->weights = calloc(num_layers - 1, sizeof(float*));
-    this->biases = calloc(num_layers - 1, sizeof(float*));
+    this->weights = calloc(num_layers - 1, sizeof(double*));
+    this->biases = calloc(num_layers - 1, sizeof(double*));
     if (this->weights == NULL || this->biases == NULL) {
         network_destroy(this);
         return NULL;
@@ -126,18 +134,11 @@ output = sizes[num_layers - 1]
 scratch = memory in use, must be 2*max(sizes) (will be imported, dont want to call malloc millions of times)
 */
 void feedforward(const Network *net, const double *input, double *output, double *scratch){
-    // Compute largest layer for scratch
-    int maxn = 0;
-    for (int i = 0; i < net->num_layers; i++){
-        if (net->sizes[i]>maxn){
-            maxn = net->sizes[i];
-        }
-    }
 
     // cur = activiations going into the current layer
     double *cur = scratch;
     // next = activations coming out of current layer
-    double *next = scratch + maxn;
+    double *next = scratch + net->max_size;
 
     for (int i = 0; i < net->sizes[0]; i++){
         cur[i] = input[i];
@@ -164,6 +165,18 @@ void feedforward(const Network *net, const double *input, double *output, double
     }
 }
 
+
+/*
+Number of test inputs the network classifies correctly. The prediction is the
+index of the highest activation in the final layer.
+
+pixels = n * sizes[0] floats, row-major, one image per row
+labels = n bytes, the correct digit for each row
+input   = sizes[0] doubles      \
+output  = sizes[num_layers-1]   |  caller-owned, so this never mallocs
+scratch = 2 * max_size doubles  /
+*/
+
 // could be changed to inline function as it's only called by backprop
 void cost_derivative(const double *output_activations, const double *y, double *delta, int n){
 	/* modifies delta to be a vector of partial deriviatives 
@@ -171,4 +184,54 @@ void cost_derivative(const double *output_activations, const double *y, double *
 	for(int i = 0; i < n; i++) {
 		delta[i] = output_activations[i] - y[i];
 	}
+}
+
+/*
+Number of inputs in data the network classifies correctly. The prediction is
+the index of the highest activation in the final layer, matching np.argmax in
+the reference implementation.
+
+Returns -1 if data does not match the network's input layer, or if the working
+buffers could not be allocated.
+*/
+int evaluate(const Network *net, const Dataset *data){
+    int d = this->sizes[0];
+    int classes = this->sizes[this->num_layers - 1];
+    int correct = 0;
+
+    if (data->d != d){
+        fprintf(stderr, "evaluate: data has %d pixels per example, network expects %d\n",
+                data->d, d);
+        return -1;
+    }
+
+    double *input = malloc((size_t)d * sizeof(double));
+    double *output = malloc((size_t)classes * sizeof(double));
+    double *scratch = malloc(2 * (size_t)net->max_size * sizeof(double));
+    
+    //this for loop can be easily parallelized
+    for (int i = 0; i < data->n; i++){
+        // the loader stores pixels as float, feedforward wants double (fix later)
+        for (int j = 0; j < d; j++){
+            input[j] = data->pixels[(size_t)i * d + j];
+        }
+
+        network_feedforward(net, input, output, scratch);
+
+        int best = 0;
+        for (int k = 1; k < classes; k++){
+            if (output[k] > output[best]){
+                best = k;
+            }
+        }
+
+        if (best == data->labels[i]){
+            correct++;
+        }
+    }
+
+    free(input);
+    free(output);
+    free(scratch);
+    return correct;
 }

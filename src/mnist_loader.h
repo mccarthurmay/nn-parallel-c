@@ -1,10 +1,14 @@
 #ifndef MNIST_LOADER_H
 #define MNIST_LOADER_H
 
-extern int n, d;
-extern float *pixels;
-extern unsigned char *labels;
+typedef struct {
+    int n; // number of examples
+    int d; // pixels per example
+    float *pixels; // n * d, row-major
+    unsigned char *labels; // n
+} Dataset;
 
-void load(const char *path);
+int dataset_load(const char *path, Dataset *data);
+void dataset_destroy(Dataset *data);
 
 #endif
