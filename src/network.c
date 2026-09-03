@@ -9,6 +9,8 @@ Gradients are calculated using backpropagation.
 #include <string.h>
 
 #include "network.h"
+#include "sigFuncs.h"
+#define PI 3.14159265358979323846
 
 /*
 Standard normal sample (mean 0, variance 1) via Box-Muller, matching
@@ -19,7 +21,7 @@ static float randn(void){
     // shift off the endpoints so u1 is in (0,1) and logf never sees 0
     float u1 = (rand() + 1.0f) / (RAND_MAX + 2.0f);
     float u2 = (rand() + 1.0f) / (RAND_MAX + 2.0f);
-    return sqrtf(-2.0f * logf(u1)) * cosf(2.0f * (float)M_PI * u2);
+    return sqrtf(-2.0f * logf(u1)) * cosf(2.0f * (float)PI * u2);
 }
 
 // Network constructor
@@ -38,7 +40,7 @@ Network *network_init(const int *sizes, int num_layers){
         return NULL;
     }
     memcpy(this->sizes, sizes, num_layers * sizeof(int));
-
+    
     // input layer doesnt have weights or biases, only output (receiving) layers
     this->weights = calloc(num_layers - 1, sizeof(float*));
     this->biases = calloc(num_layers - 1, sizeof(float*));
@@ -105,13 +107,13 @@ a = incoming activations
 
 https://www.ce.jhu.edu/dalrymple/classes/602/Class12.pdf - page 9, but vector
 */
-void matmult(const double *w, const double *a, double *result, int rows, int cols)?{
+void matmult(const double *w, const double *a, double *result, int rows, int cols){
     for (int r = 0; r < rows; r++){
         double sum = 0.0;
         for (int c = 0; c < cols; c++) {
             sum += w[r * cols + c] * a[c];
         }
-        result[r] = sum
+        result[r] = sum;
     }
 }
 
@@ -123,7 +125,7 @@ input = sizes[0]
 output = sizes[num_layers - 1]
 scratch = memory in use, must be 2*max(sizes) (will be imported, dont want to call malloc millions of times)
 */
-void network_feedforward(Network *net, double *input, double *output, double *scratch){
+void network_feedforward(const Network *net, const double *input, double *output, double *scratch){
     // Compute largest layer for scratch
     int maxn = 0;
     for (int i = 0; i < net->num_layers; i++){
@@ -133,7 +135,7 @@ void network_feedforward(Network *net, double *input, double *output, double *sc
     }
 
     // cur = activiations going into the current layer
-    double *cur = scratch
+    double *cur = scratch;
     // next = activations coming out of current layer
     double *next = scratch + maxn;
 
@@ -143,7 +145,7 @@ void network_feedforward(Network *net, double *input, double *output, double *sc
 
 
     for  (int l = 0; l < net->num_layers-1; l++){
-        int cols = net->sizes[l]
+        int cols = net->sizes[l];
         int rows = net->sizes[l + 1];
 
         matmult(net->weights[l], cur, next, rows, cols);
@@ -157,7 +159,7 @@ void network_feedforward(Network *net, double *input, double *output, double *sc
         // swap pointers
         double *tmp = cur; cur = next; next = tmp; 
     }
-    for (int i = 0; i < net->sizes[net ->num_layers -1]; i++;){
+    for (int i = 0; i < net->sizes[net ->num_layers -1]; i++){
         output[i] = cur[i];
     }
 }

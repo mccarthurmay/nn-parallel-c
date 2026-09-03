@@ -11,8 +11,9 @@ typedef struct {
     */
     int num_layers;
     int *sizes;
-    float **biases;
-    float **weights;
+    int max_size;
+    double **biases;
+    double **weights;
 } Network;
 
 /*
@@ -22,7 +23,9 @@ sizes is copied, so the caller keeps ownership of its array.
 Returns NULL if any allocation fails.
 */
 Network *network_init(const int *sizes, int num_layers);
+void matmult(const double *w, const double *a, double *result, int rows, int cols);
 
 void network_destroy(Network *this);
-
+void network_feedforward(const Network *net, const double *input,
+                         double *output, double *scratch);
 #endif
