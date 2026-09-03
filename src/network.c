@@ -95,3 +95,69 @@ void network_destroy(Network *this){
     free(this->sizes);
     free(this);
 }
+
+/*
+Dot product replacement function
+w = weight matrix
+r = row idx
+c = column idx
+a = incoming activations
+
+https://www.ce.jhu.edu/dalrymple/classes/602/Class12.pdf - page 9, but vector
+*/
+void matmult(const double *w, const double *a, double *result, int rows, int cols)?{
+    for (int r = 0; r < rows; r++){
+        double sum = 0.0;
+        for (int c = 0; c < cols; c++) {
+            sum += w[r * cols + c] * a[c];
+        }
+        result[r] = sum
+    }
+}
+
+
+/*
+Forward pass
+net = sizes, weights, and biases (read only)
+input = sizes[0]
+output = sizes[num_layers - 1]
+scratch = memory in use, must be 2*max(sizes) (will be imported, dont want to call malloc millions of times)
+*/
+void network_feedforward(Network *net, double *input, double *output, double *scratch){
+    // Compute largest layer for scratch
+    int maxn = 0;
+    for (int i = 0; i < net->num_layers; i++){
+        if (net->sizes[i]>maxn){
+            maxn = net->sizes[i];
+        }
+    }
+
+    // cur = activiations going into the current layer
+    double *cur = scratch
+    // next = activations coming out of current layer
+    double *next = scratch + maxn;
+
+    for (int i = 0; i < net->sizes[0]; i++){
+        cur[i] = input[i];
+    }
+
+
+    for  (int l = 0; l < net->num_layers-1; l++){
+        int cols = net->sizes[l]
+        int rows = net->sizes[l + 1];
+
+        matmult(net->weights[l], cur, next, rows, cols);
+
+
+        // add bias
+        for (int r = 0; r<rows; r++){
+            next[r] = sigmoid(next[r] + net->biases[l][r]);
+        }
+
+        // swap pointers
+        double *tmp = cur; cur = next; next = tmp; 
+    }
+    for (int i = 0; i < net->sizes[net ->num_layers -1]; i++;){
+        output[i] = cur[i];
+    }
+}
