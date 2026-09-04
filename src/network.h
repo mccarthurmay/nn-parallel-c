@@ -23,8 +23,6 @@ sizes is copied, so the caller keeps ownership of its array.
 Returns NULL if any allocation fails.
 */
 Network *network_init(const int *sizes, int num_layers);
-void matmult(const double *w, const double *a, double *result, int rows, int cols);
-
 void network_destroy(Network *net);
 void network_feedforward(const Network *net, const double *input,
                          double *output, double *scratch);
@@ -32,5 +30,23 @@ void network_feedforward(const Network *net, const double *input,
 void cost_derivative(const double *output_activations, const double *y,
 					 double *delta, int n);
 int evaluate(const Network *net, const Dataset *data);
+
+typedef struct {
+    int num_layers;
+    double **activations; // num_layers arrays, activations[l] holds sizes[l]
+    double **zs;          // num_layers-1 arrays, zs[l] holds sizes[l+1]
+    double *delta;        // max_size
+    double *delta_prev;   // max_size
+    double *y;            // sizes[num_layers-1], the one-hot target  
+} Workspace;
+
+Workspace *workspace_init(const Network *net);
+void workspace_destroy(Workspace *ws);
+
+void backprop(const Network *this, const float *x, unsigned char label,
+        double **nabla_b, double **nabla_w, Workspace *ws);
+
+void matmult(const double *w, const double *a, double *result, int rows, int cols);
+void matmult_T(const double *w, const double *a, double *result, int rows, int cols);
 
 #endif

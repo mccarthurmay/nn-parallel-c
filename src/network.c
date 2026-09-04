@@ -127,6 +127,21 @@ void matmult(const double *w, const double *a, double *result, int rows, int col
 
 
 /*
+result = w^T * a, with w stored rows x cols row-major.
+a has length rows, result has length cols.
+*/
+void matmult_T(const double *w, const double *a, double *result, int rows, int cols){
+    for (int c = 0; c < cols; c++) {
+        result[c] = 0.0;
+    }
+    for (int r = 0; r < rows; r++){
+        for (int c = 0; c < cols; c++){
+            result[c] += w[r * cols + c] * a[r];
+        }
+    }
+}
+
+/*
 Forward pass
 net = sizes, weights, and biases (read only)
 input = sizes[0]
