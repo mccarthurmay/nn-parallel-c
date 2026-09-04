@@ -10,6 +10,7 @@ Gradients are calculated using backpropagation.
 #include <stdio.h>
 
 #include "network.h"
+#include "mnist_loader.h"
 #include "sigFuncs.h"
 #define PI 3.14159265358979323846
 
@@ -27,33 +28,33 @@ static double randn(void){
 
 // Network constructor
 Network *network_init(const int *sizes, int num_layers){
-    Network *this = malloc(sizeof(Network));
-    if (this == NULL) {
+    Network *net = malloc(sizeof(Network));
+    if (net == NULL) {
         return NULL;
     }
     // zeroed up front so network_destroy can clean up a partly built network
-    memset(this, 0, sizeof(Network));
+    memset(net, 0, sizeof(Network));
 
-    this->num_layers = num_layers;
-    this->sizes = malloc(num_layers * sizeof(int));
-    if (this->sizes == NULL) {
-        network_destroy(this);
+    net->num_layers = num_layers;
+    net->sizes = malloc(num_layers * sizeof(int));
+    if (net->sizes == NULL) {
+        network_destroy(net);
         return NULL;
     }
-    memcpy(this->sizes, sizes, num_layers * sizeof(int));
+    memcpy(net->sizes, sizes, num_layers * sizeof(int));
     
 
-    this->max_size = 0;
+    net->max_size = 0;
     for (int i = 0; i < num_layers; i++){
-        if (sizes[i] > this->max_size){
-            this->max_size = sizes[i];
+        if (sizes[i] > net->max_size){
+            net->max_size = sizes[i];
         }
     }
     // input layer doesnt have weights or biases, only output (receiving) layers
-    this->weights = calloc(num_layers - 1, sizeof(double*));
-    this->biases = calloc(num_layers - 1, sizeof(double*));
-    if (this->weights == NULL || this->biases == NULL) {
-        network_destroy(this);
+    net->weights = calloc(num_layers - 1, sizeof(double*));
+    net->biases = calloc(num_layers - 1, sizeof(double*));
+    if (net->weights == NULL || net->biases == NULL) {
+        network_destroy(net);
         return NULL;
     }
 
@@ -63,48 +64,118 @@ Network *network_init(const int *sizes, int num_layers){
         column c = sending neuron in layer i, so element (r, c) lives at
         weights[i][r * sizes[i] + c]. Same shape as np.random.randn(y, x).
         */
-        this->weights[i] = malloc(sizes[i] * sizes[i+1] * sizeof(float));
-        this->biases[i] = malloc(sizes[i+1] * sizeof(float));
-        if (this->weights[i] == NULL || this->biases[i] == NULL) {
-            network_destroy(this);
+        net->weights[i] = malloc(sizes[i] * sizes[i+1] * sizeof(double));
+        net->biases[i] = malloc(sizes[i+1] * sizeof(double));
+        if (net->weights[i] == NULL || net->biases[i] == NULL) {
+            network_destroy(net);
             return NULL;
         }
 
         for (int j=0; j<sizes[i]*sizes[i+1]; j++){
-            this->weights[i][j] = randn();
+            net->weights[i][j] = randn();
         }
         for (int j=0; j<sizes[i+1]; j++){
-            this->biases[i][j] = randn();
+            net->biases[i][j] = randn();
         }
     }
 
-    return this;
+    return net;
 }
 
 
-void network_destroy(Network *this){
-    if (this == NULL) {
+void network_destroy(Network *net){
+    if (net == NULL) {
         return;
     }
 
-    // read num_layers before this is freed
-    if (this->weights != NULL) {
-        for (int i=0; i<this->num_layers-1; i++){
-            free(this->weights[i]);
+    // read num_layers before net is freed
+    if (net->weights != NULL) {
+        for (int i=0; i<net->num_layers-1; i++){
+            free(net->weights[i]);
         }
     }
-    free(this->weights);
+    free(net->weights);
 
-    if (this->biases != NULL) {
-        for (int i=0; i<this->num_layers-1; i++){
-            free(this->biases[i]);
+    if (net->biases != NULL) {
+        for (int i=0; i<net->num_layers-1; i++){
+            free(net->biases[i]);
         }
     }
-    free(this->biases);
+    free(net->biases);
 
-    free(this->sizes);
-    free(this);
+    free(net->sizes);
+    free(net);
 }
+
+/*
+Scratch space for backprop
+*/
+Workspace *workspace_init(const Network *net){
+    Workspace *ws = malloc(sizeof(Workspace));
+    if(ws == NULL) {
+        return NULL;
+    }
+
+    memset(ws, 0, sizeof(Workspace)); // so workspace_destroy can destroy a partially build workspace
+
+    ws->num_layers = net->num_layers;
+
+    ws->activations = calloc(net->num_layers, sizeof(double*));
+    ws->zs = calloc(net->num_layers - 1, sizeof(double*));
+    ws->delta = malloc((size_t)net->max_size * sizeof(double));
+    ws->delta_prev = malloc((size_t)net->max_size * sizeof(double));
+    ws->y = malloc((size_t)net->sizes[net->num_layers - 1] * sizeof(double));
+    if (ws->activations == NULL || ws->zs == NULL || ws->delta == NULL
+            || ws->delta_prev == NULL || ws->y == NULL){
+        workspace_destroy(ws);
+        return NULL;
+    }
+
+    for (int l = 0; l < net->num_layers; l++){
+        ws->activations[l] = malloc((size_t)net->sizes[l] * sizeof(double));
+        if (ws->activations[l] == NULL) {
+            workspace_destroy(ws);
+            return NULL;
+        }
+    }
+    
+    for (int l = 0; l < net->num_layers - 1; l++){
+        ws->zs[l] = malloc((size_t)net->sizes[l+1] * sizeof(double));
+        if (ws->zs[l] == NULL) {
+            workspace_destroy(ws);
+            return NULL;
+        }
+    }
+
+    return ws;
+}
+
+void workspace_destroy(Workspace *ws){
+    if (ws == NULL){
+        return;
+    }
+
+    if (ws->activations != NULL){
+        for (int l = 0; l < ws->num_layers; l++){
+            free(ws->activations[l]);
+        }
+    }
+
+    free(ws->activations);
+
+    if(ws->zs != NULL){
+        for (int l = 0; l < ws->num_layers - 1; l++){
+            free(ws->zs[l]);
+        }
+    }
+    free(ws->zs);
+
+    free(ws->delta);
+    free(ws->delta_prev);
+    free(ws->y);
+    free(ws);
+}
+
 
 /*
 Dot product replacement function
@@ -180,6 +251,71 @@ void feedforward(const Network *net, const double *input, double *output, double
     }
 }
 
+void backprop(const Network *net, const float *x, unsigned char label,
+        double **nabla_b, double **nabla_w, Workspace *ws){
+    int L = net->num_layers - 2; // idx of the last weight layer
+    int classes = net->sizes[net->num_layers - 1];
+
+    // activations[0] = x
+    for (int i = 0; i < net->sizes[0]; i++){
+        ws->activations[0][i] = x[i];
+    }
+    
+    // forward pass, keeping everything - same loop as feedforward except nothing is overwritten
+    // zs[l] is the pre-sigmoid value and activations[l+1] is the post sigmoid one
+    for (int l = 0; l <= L; l++){
+        int cols = net->sizes[l];
+        int rows = net->sizes[l+1];
+
+        matmult(net->weights[l], ws->activations[l], ws->zs[l], rows, cols);
+        for (int r = 0; r < rows; r++){
+            ws->zs[l][r] += net->biases[l][r];
+            ws->activations[l+1][r] = sigmoid(ws->zs[l][r]);
+        }
+    }
+
+    // the output delta (network.py:102-103)
+    
+    // equivalent of vectorized_result in mnist_loader.py
+    for (int k = 0; k < classes; k++){
+        ws->y[k] = 0.0;
+    }
+    ws->y[label] = 1.0;
+
+    //  delta = cost_derivative(activations[-1], y) * sigmoid_prime(zs[-1])
+    cost_derivative(ws->activations[net->num_layers - 1], ws->y, ws->delta, classes);
+    for (int r = 0; r < classes; r++){
+        ws->delta[r] *= sigmoid_prime(ws->zs[L][r]);
+    }
+
+    // backwards loop
+
+    for (int l = L; l >= 0; l--){
+        int rows = net->sizes[l + 1];
+        int cols = net->sizes[l];
+
+        if (l < L) {
+            // delta = (weights[l+1]^T dot delta) * sigmoid_prime(zs[l])
+            matmult_T(net->weights[l + 1], ws->delta, ws->delta_prev,
+                    net->sizes[l + 2], rows);
+            for (int r = 0; r < rows; r++){
+                ws->delta_prev[r] *= sigmoid_prime(ws->zs[l][r]);
+            }
+            double *tmp = ws->delta;
+            ws->delta = ws->delta_prev;
+            ws->delta_prev = tmp;
+        }
+
+        // nabla_b[l] += delta; nabla_w[l] += delta dot activations[l]^T
+        for (int r = 0; r < rows; r++){
+            nabla_b[l][r] += ws->delta[r];
+            for (int c = 0; c < cols; c++){
+                nabla_w[l][r * cols + c] += ws->delta[r] * ws->activations[l][c];
+            }
+        }
+    }
+}
+
 
 /*
 Number of test inputs the network classifies correctly. The prediction is the
@@ -188,7 +324,7 @@ index of the highest activation in the final layer.
 pixels = n * sizes[0] floats, row-major, one image per row
 labels = n bytes, the correct digit for each row
 input   = sizes[0] doubles      \
-output  = sizes[num_layers-1]   |  caller-owned, so this never mallocs
+output  = sizes[num_layers-1]   |  caller-owned, so net never mallocs
 scratch = 2 * max_size doubles  /
 */
 
@@ -210,8 +346,8 @@ Returns -1 if data does not match the network's input layer, or if the working
 buffers could not be allocated.
 */
 int evaluate(const Network *net, const Dataset *data){
-    int d = this->sizes[0];
-    int classes = this->sizes[this->num_layers - 1];
+    int d = net->sizes[0];
+    int classes = net->sizes[net->num_layers - 1];
     int correct = 0;
 
     if (data->d != d){
@@ -224,14 +360,14 @@ int evaluate(const Network *net, const Dataset *data){
     double *output = malloc((size_t)classes * sizeof(double));
     double *scratch = malloc(2 * (size_t)net->max_size * sizeof(double));
     
-    //this for loop can be easily parallelized
+    //net for loop can be easily parallelized
     for (int i = 0; i < data->n; i++){
         // the loader stores pixels as float, feedforward wants double (fix later)
         for (int j = 0; j < d; j++){
             input[j] = data->pixels[(size_t)i * d + j];
         }
 
-        network_feedforward(net, input, output, scratch);
+        feedforward(net, input, output, scratch);
 
         int best = 0;
         for (int k = 1; k < classes; k++){

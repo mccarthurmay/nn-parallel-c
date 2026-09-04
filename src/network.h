@@ -1,6 +1,8 @@
 #ifndef NETWORK_H
 #define NETWORK_H
 
+
+#include "mnist_loader.h"
 typedef struct {
     /*
     sizes = number of neurons in respective layer of network
@@ -24,12 +26,11 @@ Returns NULL if any allocation fails.
 */
 Network *network_init(const int *sizes, int num_layers);
 void network_destroy(Network *net);
-void network_feedforward(const Network *net, const double *input,
+void feedforward(const Network *net, const double *input,
                          double *output, double *scratch);
 
 void cost_derivative(const double *output_activations, const double *y,
 					 double *delta, int n);
-int evaluate(const Network *net, const Dataset *data);
 
 typedef struct {
     int num_layers;
@@ -43,7 +44,9 @@ typedef struct {
 Workspace *workspace_init(const Network *net);
 void workspace_destroy(Workspace *ws);
 
-void backprop(const Network *this, const float *x, unsigned char label,
+int evaluate(const Network *net, const Dataset *data);
+
+void backprop(const Network *net, const float *x, unsigned char label,
         double **nabla_b, double **nabla_w, Workspace *ws);
 
 void matmult(const double *w, const double *a, double *result, int rows, int cols);
