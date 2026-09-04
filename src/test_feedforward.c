@@ -17,7 +17,7 @@ int main(void) {
     Network net = {2, sizes, 2, &bp, &wp};
 
     double scratch[4];
-    network_feedforward(&net, a, out, scratch);
+    feedforward(&net, a, out, scratch);
     printf("ff:       [%.15f, %.15f]\n", out[0], out[1]);
     printf("expected: [%.15f, %.15f]\n", 1/(1+exp(-3.5)), 1/(1+exp(-6.5)));
 

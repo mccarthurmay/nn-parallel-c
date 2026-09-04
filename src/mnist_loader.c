@@ -42,7 +42,7 @@ int dataset_load(const char *path, Dataset *data){
     if (header[0] != MNIST_MAGIC){
         fprintf(stderr, "dataset_load: %s is not an mnist bin (magic %08x)\n",
                 path, (unsigned)header[0]);
-        goto fail
+        goto fail;
     }
 
     n = (int)header[1];
@@ -56,6 +56,16 @@ int dataset_load(const char *path, Dataset *data){
     labels = malloc((size_t)n);
     if (pixels == NULL || labels == NULL){
         fprintf(stderr, "dataset_load: out of memory for %s (%d x %d)\n", path, n, d);
+        goto fail;
+    }
+
+
+    if (fread(pixels, sizeof(float), (size_t)n * d, f) != (size_t)n * d){
+        fprintf(stderr, "dataset_load: %s: truncated pixel block\n", path);
+        goto fail;
+    }
+    if (fread(labels, 1, (size_t)n, f) != (size_t)n){
+        fprintf(stderr, "dataset_load: %s: truncated label block\n", path);
         goto fail;
     }
 
@@ -80,6 +90,9 @@ void dataset_destroy(Dataset *data){
     }
     free(data->pixels);
     free(data->labels);
-
+    data->pixels = NULL;
+    data->labels = NULL;
+    data->n = 0;
+    data->d = 0;
 }
 

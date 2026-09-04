@@ -18,6 +18,7 @@ typedef struct {
     double **weights;
 } Network;
 
+
 /*
 Build a network with num_layers layers, layer i holding sizes[i] neurons.
 Weights and biases are drawn from a Gaussian with mean 0 and variance 1.
@@ -43,6 +44,25 @@ typedef struct {
 
 Workspace *workspace_init(const Network *net);
 void workspace_destroy(Workspace *ws);
+
+
+// Gradient
+typedef struct {
+    int num_layers;
+    double **nabla_b;   //num_layers-1 arrays, nabla_b[l] holds sizes[l+1] 
+    double **nabla_w;   // num_layers-1 arrays, nabla_w[l] holds sizes[l]*sizes[l+1] 
+} Grad;
+
+
+Grad *grad_init(const Network *net);
+void grad_destroy(Grad *g);
+
+void update_mini_batch(Network *net, const Dataset *data, const int *idx,
+                       int m, double eta, Grad *g, Workspace *ws);
+
+
+int SGD(Network *net, const Dataset *train, int epochs, int mbs, double eta,
+        const Dataset *test);
 
 int evaluate(const Network *net, const Dataset *data);
 

@@ -21,8 +21,8 @@ for seeding with srand() once at program start.
 */
 static double randn(void){
     // shift off the endpoints so u1 is in (0,1) and logf never sees 0
-    float u1 = (rand() + 1.0) / (RAND_MAX + 2.0);
-    float u2 = (rand() + 1.0) / (RAND_MAX + 2.0);
+    double u1 = (rand() + 1.0) / (RAND_MAX + 2.0);
+    double u2 = (rand() + 1.0) / (RAND_MAX + 2.0);
     return sqrt(-2.0 * log(u1)) * cos(2.0 * PI * u2);
 }
 
@@ -359,7 +359,11 @@ int evaluate(const Network *net, const Dataset *data){
     double *input = malloc((size_t)d * sizeof(double));
     double *output = malloc((size_t)classes * sizeof(double));
     double *scratch = malloc(2 * (size_t)net->max_size * sizeof(double));
-    
+    if (input == NULL || output == NULL || scratch == NULL){
+        fprintf(stderr, "evaluate: out of memory\n");
+        free(input); free(output); free(scratch);
+        return -1;
+    }
     //net for loop can be easily parallelized
     for (int i = 0; i < data->n; i++){
         // the loader stores pixels as float, feedforward wants double (fix later)
@@ -385,4 +389,116 @@ int evaluate(const Network *net, const Dataset *data){
     free(output);
     free(scratch);
     return correct;
+}
+
+Grad *grad_init(const Network *net){
+    Grad *g = malloc(sizeof(Grad));
+    if (g == NULL) return NULL;
+    memset(g, 0, sizeof(Grad));
+ 
+    g->num_layers = net->num_layers;
+    g->nabla_b = calloc(net->num_layers - 1, sizeof(double*));
+    g->nabla_w = calloc(net->num_layers - 1, sizeof(double*));
+    if (g->nabla_b == NULL || g->nabla_w == NULL){
+        grad_destroy(g);
+        return NULL;
+    }
+ 
+    for (int l = 0; l < net->num_layers - 1; l++){
+        g->nabla_b[l] = malloc((size_t)net->sizes[l+1] * sizeof(double));
+        g->nabla_w[l] = malloc((size_t)net->sizes[l] * net->sizes[l+1] * sizeof(double));
+        if (g->nabla_b[l] == NULL || g->nabla_w[l] == NULL){
+            grad_destroy(g);
+            return NULL;
+        }
+    }
+    return g;
+}
+ 
+void grad_destroy(Grad *g){
+    if (g == NULL) return;
+    if (g->nabla_b != NULL)
+        for (int l = 0; l < g->num_layers - 1; l++) free(g->nabla_b[l]);
+    free(g->nabla_b);
+    if (g->nabla_w != NULL)
+        for (int l = 0; l < g->num_layers - 1; l++) free(g->nabla_w[l]);
+    free(g->nabla_w);
+    free(g);
+}
+
+
+ /*Update the network's weights and biases by applying
+    gradient descent using backpropagation to a single mini batch.
+    The ``mini_batch`` is a list of tuples ``(x, y)``, and ``eta``
+    is the learning rate.*/
+void update_mini_batch(Network *net, const Dataset *data, const int *idx, int m, double eta, Grad *g, Workspace *ws){
+    // Zero all calls to prevent batch 2 gradient from stacking on batch 1
+    for (int l = 0; l < net->num_layers - 1; l++){
+        memset(g->nabla_b[l], 0, (size_t)net->sizes[l+1] * sizeof(double));
+        memset(g->nabla_w[l], 0,
+               (size_t)net->sizes[l] * net->sizes[l+1] * sizeof(double));
+    }
+
+    // for x, y in mini_batch
+    for (int i = 0; i < m; i++){
+        int e = idx[i];
+        const float *x = data->pixels + (size_t)e * data->d;
+        backprop(net, x, data->labels[e], g->nabla_b, g->nabla_w, ws);
+    }
+
+    // w -= (eta/m) * nabla_w
+    // b -= (eta/m) * nabla_b 
+    double scale = eta / (double)m;
+    for (int l = 0; l < net->num_layers - 1; l++){
+        int rows = net->sizes[l+1], cols = net->sizes[l];
+        for (int j = 0; j < rows * cols; j++)
+            net->weights[l][j] -= scale * g->nabla_w[l][j];
+        for (int r = 0; r < rows; r++)
+            net->biases[l][r] -= scale * g->nabla_b[l][r];
+    }
+}
+
+
+// helper func, replaces random.shuffle() in python
+static void shuffle(int *idx, int n){
+    for (int i = n - 1; i > 0; i--){
+        int j = rand() % (i + 1);
+        int tmp = idx[i]; idx[i] = idx[j]; idx[j] = tmp;
+    }
+}
+
+int SGD(Network *net, const Dataset *train, int epochs, int mbs, double eta,
+        const Dataset *test){
+
+    int n = train->n;
+
+    int *idx = malloc((size_t)n * sizeof(int));
+    Workspace *ws = workspace_init(net);
+    Grad *g = grad_init(net);
+    if (idx == NULL || ws == NULL || g == NULL){
+        free(idx); workspace_destroy(ws); grad_destroy(g);
+        return -1;
+    }
+    for (int i = 0; i < n; i++) idx[i] = i;
+
+    for (int e = 0; e < epochs; e++){
+        shuffle(idx, n);
+
+        for (int k = 0; k < n; k += mbs){
+            int m = (n - k < mbs) ? (n - k) : mbs;
+            update_mini_batch(net, train, idx + k, m, eta, g, ws);
+        }
+
+        if (test != NULL){
+            printf("Epoch %d: %d / %d\n", e, evaluate(net, test), test->n);
+        } else {
+            printf("Epoch %d complete\n", e);
+        }
+        fflush(stdout);
+    }
+
+    free(idx);
+    workspace_destroy(ws);
+    grad_destroy(g);
+    return 0;
 }
