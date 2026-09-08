@@ -1,23 +1,25 @@
 #!/bin/bash
 #SBATCH --job-name=nn-tau
-#SBATCH --output=tau_%j.out
+#SBATCH --output=tau.out
 #SBATCH --time=02:00:00
 #SBATCH --partition=Mem500
 #SBATCH --exclusive
 
-
-
 set -euo pipefail
 
+# this script lives in src/, so the repo root may be one level up
+REPO="${REPO:-$SLURM_SUBMIT_DIR}"
+if [ ! -d "$REPO/src" ] && [ -d "$REPO/../src" ]; then
+    REPO=$(cd "$REPO/.." && pwd)
+fi
+[ -d "$REPO/src" ] || { echo "cannot find src/ from $REPO" >&2; exit 1; }
+
+# needed at RUN time: libtau, libpapi, and libstdc++/libgcc_s from the spack gcc
 module load gcc
 module load tau papi
 
-
-# Confirm counters exist
 papi_avail | grep -E "PAPI_TOT_INS|PAPI_L1_DCM" || true
 
-
-export TAU_OPTIONS="-optCompInst -optVerbose"
 export TAU_METRICS=TIME:PAPI_TOT_INS:PAPI_L1_DCM
 export TAU_PROFILE=1
 export TAU_CALLPATH=1
@@ -44,4 +46,3 @@ for d in MULTI__*; do
 done
 
 echo "profiles in $OUT"
-
