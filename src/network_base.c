@@ -12,7 +12,7 @@ Gradients are calculated using backpropagation.
 #include "network.h"
 #include "mnist_loader.h"
 #include "sigFuncs.h"
-#include "profiling.h"
+
 #define PI 3.14159265358979323846
 
 /*
@@ -27,31 +27,66 @@ static double randn(void){
     return sqrt(-2.0 * log(u1)) * cos(2.0 * PI * u2);
 }
 
-// Network constructor
+/*
+Build a network with num_layers layers 
+
+Layout:
+num_layers  int, number of layers in sizes[] array
+
+sizes       array, a copy of the caller's array, num_layers ints long. It is copied rather than storing the caller's pointer
+            to retain validity if freed or reused by caller. Also prevents future collisions when in parallel. 
+            holds an array of the layers, such as {784, 30, 10} (784 neurons in inpuht layer, 30 in hidden layer, 10 in output layer)
+
+max_size    largest number in sizes array. Other functions need this number to allocate 'scratch' buffer memory to prevent memory overflow
+
+weights     array, of num_layers-1 pointers. weights[i] points at one block of doubles holding every connection from layer i to layer i+1. 
+            Each block is sizes[i] * sizes[i+1] doubles long, representing a grid of sizes[i+1] rows by sizes[i] columns where:
+                row r = a receiving neuron in layer i +1
+                column c = a sending neuron in layer i
+            
+            The grid is stored flat, in row-major order. 
+                weights[i][r * sizes[i] + c]
+            
+biases      array, of num_layers-1 pointers. biases[i] points at sizes[i+1] doubles. 
+
+Example sizes = {784, 30, 10}:
+max_sizes   784
+weights[0]  784 * 30 = 23520 doubles    grid: 30 rows x 784 columns
+biases[0]   30 doubles
+weights[1]  30 * 10 = 300 doubles       grid: 10 rows x 30 columns
+biases[1]   10 doubles
+*/
 Network *network_init(const int *sizes, int num_layers){
     Network *net = malloc(sizeof(Network));
+
     if (net == NULL) {
         return NULL;
     }
+
     // zeroed up front so network_destroy can clean up a partly built network
     memset(net, 0, sizeof(Network));
 
     net->num_layers = num_layers;
+    // create own copy of sizes array. makes network independent
     net->sizes = malloc(num_layers * sizeof(int));
+
     if (net->sizes == NULL) {
         network_destroy(net);
         return NULL;
     }
+
+    // copy bytes from original sizes array to our own sizes array
     memcpy(net->sizes, sizes, num_layers * sizeof(int));
     
-
+    // Get largest layer, used for scratch buffer later 
     net->max_size = 0;
     for (int i = 0; i < num_layers; i++){
         if (sizes[i] > net->max_size){
             net->max_size = sizes[i];
         }
     }
-    // input layer doesnt have weights or biases, only output (receiving) layers
+
+    // input layer doesnt have weights or biases, only output (receiving) layers hence num_layers -1
     net->weights = calloc(num_layers - 1, sizeof(double*));
     net->biases = calloc(num_layers - 1, sizeof(double*));
     if (net->weights == NULL || net->biases == NULL) {
@@ -83,12 +118,13 @@ Network *network_init(const int *sizes, int num_layers){
     return net;
 }
 
-
+/*
+Frees network's location in memory. 
+*/
 void network_destroy(Network *net){
     if (net == NULL) {
         return;
     }
-
     // read num_layers before net is freed
     if (net->weights != NULL) {
         for (int i=0; i<net->num_layers-1; i++){
@@ -109,7 +145,22 @@ void network_destroy(Network *net){
 }
 
 /*
-Scratch space for backprop
+Allocates scratch space that backprop needs, returning a pointer to it
+
+Layout:
+num_layers      int. copied from network
+
+activations     double**. activations[l] is an array for layer l. activations[l][i] is neuron i's value in that layer, after sigmoid is applied.
+
+zs              double*, zs[l] holds sizes[l+1] doubles, value before sigmoid is applied 
+
+delta           double*, flat array of max_size doubles. 
+
+delta_prev      double*, flat array, same size as delta
+
+y               double*, flat array of sizes[num_layers-1] doubles, always 10 for mnist (10 digits). All zeros except for 1.0 at the correct digit.
+
+
 */
 Workspace *workspace_init(const Network *net){
     Workspace *ws = malloc(sizeof(Workspace));
@@ -132,6 +183,7 @@ Workspace *workspace_init(const Network *net){
         return NULL;
     }
 
+    // fill in activations list
     for (int l = 0; l < net->num_layers; l++){
         ws->activations[l] = malloc((size_t)net->sizes[l] * sizeof(double));
         if (ws->activations[l] == NULL) {
@@ -151,6 +203,9 @@ Workspace *workspace_init(const Network *net){
     return ws;
 }
 
+/*
+Frees workspace memory
+*/
 void workspace_destroy(Workspace *ws){
     if (ws == NULL){
         return;
@@ -215,48 +270,98 @@ void matmult_T(const double *w, const double *a, double *result, int rows, int c
 
 /*
 Forward pass
-net = sizes, weights, and biases (read only)
-input = sizes[0]
-output = sizes[num_layers - 1]
-scratch = memory in use, must be 2*max(sizes) (will be imported, dont want to call malloc millions of times)
+Runs one image through the network and writes out its 10 output values
+
+Computes two operations, reapeated once per layer transition:
+
+z = W dot a + b     every neuron's weighted sum, plus its bias
+a = sigmoid(z)      make each total range 0 to 1
+
+output of one layer is the input of the next layer. 
+
+function only reads weights and biases. Used during training
+
+Params:
+net         weights, biases,  and layer sizes (read only)
+
+input       double*, sizes[0] doubles. input is the image. read only.
+
+output      double*, sizes[num_layers-1] doubles, always 10 for mnist. 
+
+scratch     2*max_sizes doubles
 */
 void feedforward(const Network *net, const double *input, double *output, double *scratch){
+
     // cur = activiations going into the current layer
+    // points at first half of scratch block
     double *cur = scratch;
     // next = activations coming out of current layer
+    // points at next half
     double *next = scratch + net->max_size;
 
+    //copy image into cur, first layer
     for (int i = 0; i < net->sizes[0]; i++){
         cur[i] = input[i];
     }
-
 
     for  (int l = 0; l < net->num_layers-1; l++){
         int cols = net->sizes[l];
         int rows = net->sizes[l + 1];
 
+        // get weighted sums
         matmult(net->weights[l], cur, next, rows, cols);
 
 
         // add bias
         for (int r = 0; r<rows; r++){
+            // next gets the finished activations for receiving layer
             next[r] = sigmoid(next[r] + net->biases[l][r]);
         }
 
         // swap pointers
         double *tmp = cur; cur = next; next = tmp; 
     }
+    
     for (int i = 0; i < net->sizes[net ->num_layers -1]; i++){
         output[i] = cur[i];
     }
+
 }
 
+
+/*
+Computes gradient for one trading image, adding it to nabla_b/nabla_w
+
+Training is essentially just nudging every weight and bias a little in a direction that makes the network less wrong. 
+In order to do this, each individual parameter needs a partial derivative, or a number that indicates the "cost" for every "nudge" on the parameter. 
+A collection of partial derivatives is a gradient, represented by the symbol nabla. 
+
+Delta[r] is the error at neuron r, or the derivative of the cost with respect to that neuron's pre-sigmoid total z. 
+        gradient for bias r = delta[r]
+        gradient for weight (r, c) = delta [r] * activation of sending neuron c
+
+Params:
+
+net         Network *,weights, biases, sizes. Read only.
+
+x           float *, the image
+
+label       char, the correct digit (0-9)
+
+nabla_b     double **, caller's gradient accumulators
+
+nabla_w     double **, biases and weights
+
+ws          workspace *, scratch space allocated by SGD
+
+*/
 void backprop(const Network *net, const float *x, unsigned char label,
         double **nabla_b, double **nabla_w, Workspace *ws){
     int L = net->num_layers - 2; // idx of the last weight layer
     int classes = net->sizes[net->num_layers - 1];
 
     // activations[0] = x
+    // load image into input layer
     for (int i = 0; i < net->sizes[0]; i++){
         ws->activations[0][i] = x[i];
     }
@@ -269,7 +374,9 @@ void backprop(const Network *net, const float *x, unsigned char label,
 
         matmult(net->weights[l], ws->activations[l], ws->zs[l], rows, cols);
         for (int r = 0; r < rows; r++){
+            // adds bias into z
             ws->zs[l][r] += net->biases[l][r];
+            // 0-1 value into activations
             ws->activations[l+1][r] = sigmoid(ws->zs[l][r]);
         }
     }
@@ -283,19 +390,28 @@ void backprop(const Network *net, const float *x, unsigned char label,
     ws->y[label] = 1.0;
 
     //  delta = cost_derivative(activations[-1], y) * sigmoid_prime(zs[-1])
+    //
+    //  Two factors multiplied together
+    //
+    //  First factor - how wrong the answer was (cost)
     cost_derivative(ws->activations[net->num_layers - 1], ws->y, ws->delta, classes);
+    //  Second factor - how responsive the neuron was.
+    //  if confidently wrong (z far from 0), get a small delta and no learning
     for (int r = 0; r < classes; r++){
         ws->delta[r] *= sigmoid_prime(ws->zs[L][r]);
     }
 
     // backwards loop
-
+    //
+    // walks layers from last to first. push delta back one layer then convert current delta into gradients
     for (int l = L; l >= 0; l--){
         int rows = net->sizes[l + 1];
         int cols = net->sizes[l];
 
         if (l < L) {
             // delta = (weights[l+1]^T dot delta) * sigmoid_prime(zs[l])
+            // 
+            // sends error back through connections. 
             matmult_T(net->weights[l + 1], ws->delta, ws->delta_prev,
                     net->sizes[l + 2], rows);
             for (int r = 0; r < rows; r++){
@@ -314,6 +430,7 @@ void backprop(const Network *net, const float *x, unsigned char label,
             }
         }
     }
+
 }
 
 
@@ -344,10 +461,27 @@ the reference implementation.
 
 Returns -1 if data does not match the network's input layer, or if the working
 buffers could not be allocated.
+
+Essentially counts how many images in a dataset the network classifies correctly
+
+Params:
+net         const Network *
+            Pointer to one Network struct. Read only.
+
+data        const Dataset *
+            Pointer to one Dataset struct. Read only. 
+            data->n         int, number of images
+            data->d         int, pixels per image, must match sizes[0]
+            data->pixels    float*, ONE flat array of n * d floats, all images end to end, row-major
+            data-> labels   unsigned char*,  flat array of n bytes, the correct digit for each image
+
+Returns int, number of correct classificiations
 */
 int evaluate(const Network *net, const Dataset *data){
     int d = net->sizes[0];
     int classes = net->sizes[net->num_layers - 1];
+
+    // Tally of correct numbers
     int correct = 0;
 
     if (data->d != d){
@@ -356,6 +490,7 @@ int evaluate(const Network *net, const Dataset *data){
         return -1;
     }
 
+    //3 Working buffers
     double *input = malloc((size_t)d * sizeof(double));
     double *output = malloc((size_t)classes * sizeof(double));
     double *scratch = malloc(2 * (size_t)net->max_size * sizeof(double));
@@ -364,6 +499,7 @@ int evaluate(const Network *net, const Dataset *data){
         free(input); free(output); free(scratch);
         return -1;
     }
+
     //net for loop can be easily parallelized
     for (int i = 0; i < data->n; i++){
         // the loader stores pixels as float, feedforward wants double (fix later)
@@ -391,6 +527,34 @@ int evaluate(const Network *net, const Dataset *data){
     return correct;
 }
 
+/*
+Allocates the gradient accumulators for one mini-batch. Returns a pointer to allocated space
+
+A grad is shaped like a network's wweights and biases, but it just holds gradients rather than parameters.
+For every weight in the network, there is a number saying which direction the weight should move and how strongly
+it should move in that direction. 
+        net -> weights[l][i]       actual weight stored in network
+        g -> nabla_w[l][i]          how much to change that weight
+
+Param:
+net         const Network *
+            Pointer to one Network struct. Read-only. Uses shape (num_layers and sizes[])
+
+
+Layout:
+    num_layers      int. Copied from net.
+
+    nabla_b         double**. has num_layers-1 pointers that are each given a block of sizes[l+1] doubles, giving one gradient per receiving neuron. 
+                    nabla_b[l][r]
+    
+    nabla_w         double**. num_layers-1 pointers that are each given a block of sizes[l] * sizes[l+1] doubles. Uses same row-major layout as network_init
+
+        nabla_b[0]   30 doubles         matches biases[0]
+        nabla_b[1]   10 doubles         matches biases[1]
+        nabla_w[0]   23,520 doubles     matches weights[0], 30 x 784
+        nabla_w[1]   300 doubles        matches weights[1], 10 x 30
+
+*/
 Grad *grad_init(const Network *net){
     Grad *g = malloc(sizeof(Grad));
     if (g == NULL) return NULL;
@@ -415,6 +579,10 @@ Grad *grad_init(const Network *net){
     return g;
 }
  
+
+/*
+Clean up grad
+*/
 void grad_destroy(Grad *g){
     if (g == NULL) return;
     if (g->nabla_b != NULL)
@@ -427,11 +595,40 @@ void grad_destroy(Grad *g){
 }
 
 
- /*Update the network's weights and biases by applying
-    gradient descent using backpropagation to a single mini batch.
-    The ``mini_batch`` is a list of tuples ``(x, y)``, and ``eta``
-    is the learning rate.*/
+/*
+Runs one mini-batch and applies the result to the network's weights and biases. Where the "learning" happens. 
+
+1. Zero the accumulators
+2. Call the backprop once per image in the batch, summing the gradients
+3. Subtract teh averaged gradient from every parameter
+
+- Gradient descent
+
+Params:
+net         Network *
+            Not set as a constant, gets modified
+
+data        const Dataset *
+            read-only. Receives whole dataset plus a list of images to use.
+
+idx         const int *
+            read-only. A pointer into the middle of SGD's shuffled index array. 
+
+m           int
+            number of images in this batch. 
+
+eta         double
+            learning rate, step size. If too small, training becomes slow. If too large, inaccurate. 
+
+g           Grad *
+            Accumulators, allocated by SGD and reused each batch.
+
+ws          Workspace *
+            Backprop's scratch, allocated once by SGD. 
+    
+*/
 void update_mini_batch(Network *net, const Dataset *data, const int *idx, int m, double eta, Grad *g, Workspace *ws){
+
     // Zero all calls to prevent batch 2 gradient from stacking on batch 1
     for (int l = 0; l < net->num_layers - 1; l++){
         memset(g->nabla_b[l], 0, (size_t)net->sizes[l+1] * sizeof(double));
@@ -440,7 +637,10 @@ void update_mini_batch(Network *net, const Dataset *data, const int *idx, int m,
     }
 
     // for x, y in mini_batch
+    //  each iteration adds one image's gradient on top of whatever is in g. 
+    //  after m interations, g holds the sum of all m gradients.
     for (int i = 0; i < m; i++){
+        // idx[i] is image to use
         int e = idx[i];
         const float *x = data->pixels + (size_t)e * data->d;
         backprop(net, x, data->labels[e], g->nabla_b, g->nabla_w, ws);
@@ -448,7 +648,15 @@ void update_mini_batch(Network *net, const Dataset *data, const int *idx, int m,
 
     // w -= (eta/m) * nabla_w
     // b -= (eta/m) * nabla_b 
+
+    // 3. Subtract teh averaged gradient from every parameter
+    //
+    // dividing by m    turns the sum from the above loop into an average
+    // 
+    // multiply by eta  scales the average down
     double scale = eta / (double)m;
+
+    // walk the grid and subtract averaged gradient for weights and biases
     for (int l = 0; l < net->num_layers - 1; l++){
         int rows = net->sizes[l+1], cols = net->sizes[l];
         for (int j = 0; j < rows * cols; j++)
@@ -456,6 +664,7 @@ void update_mini_batch(Network *net, const Dataset *data, const int *idx, int m,
         for (int r = 0; r < rows; r++)
             net->biases[l][r] -= scale * g->nabla_b[l][r];
     }
+
 }
 
 
@@ -467,37 +676,78 @@ static void shuffle(int *idx, int n){
     }
 }
 
+/*
+Trains network by stochastic (steps are based on small, randomly chosen batches) gradient descent, for a given number of epochs
+
+For each epoch, shuffle the training set, break into mini-batches, and run update_mini_batch on the batches. 
+
+Params:
+net         Network *
+            Gets modified in update_mini_batch
+
+train       const Dataset *
+            Read-only.
+
+epochs      int
+            How many complete passes over training set.
+
+mbs         int
+            Mini-batch size, images per step
+
+eta         double 
+            Learning rate, step size
+
+test        const Dataset *
+            read-only. REMOVE IF PER_EPOCH ACCURACYT IS NOT IMPORTANT
+
+returns int 0 on success, -1 if scratch allocation fails.
+*/
 int SGD(Network *net, const Dataset *train, int epochs, int mbs, double eta,
         const Dataset *test){
-    PROF_PHASE(p_epoch, "Phase_TrainEpoch");
-    PROF_PHASE(p_eval, "Phase_Evaluate");
+
     
 
     int n = train->n;
 
+    //idx   n ints, one per training image. holds the order images are visted in epoch. Filled and reshuffled for each epoch
     int *idx = malloc((size_t)n * sizeof(int));
+    //ws    backprop's per image scratch
     Workspace *ws = workspace_init(net);
+    //g     per batch gradient accumulators. 
     Grad *g = grad_init(net);
+
+
+
     if (idx == NULL || ws == NULL || g == NULL){
         free(idx); workspace_destroy(ws); grad_destroy(g);
         return -1;
     }
+
     for (int i = 0; i < n; i++) idx[i] = i;
 
+    // One iteration per epoch
     for (int e = 0; e < epochs; e++){
         shuffle(idx, n);
-        
-        PROF_PHASE_START(p_epoch);
+        // Walk through shuffled order in chunks of mbs
         for (int k = 0; k < n; k += mbs){
+
+            // Checks if batch == mbs, last batch is often short
+            //
+            //
+            // COULD BE OPtIMIZED, ONLY RAN ON LAST BATCH
+            //
+            //
             int m = (n - k < mbs) ? (n - k) : mbs;
+
+            
             update_mini_batch(net, train, idx + k, m, eta, g, ws);
         }
-        PROF_PHASE_STOP(p_epoch);
+
 
         if (test != NULL){
-            PROF_PHASE_START(p_eval);
+
             int correct = evaluate(net, test);
-            PROF_PHASE_STOP(p_eval);
+
             printf("Epoch %d: %d / %d\n", e, correct, test->n);
         } else {
             printf("Epoch %d complete\n", e);

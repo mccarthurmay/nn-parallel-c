@@ -74,3 +74,25 @@ done
 echo
 echo "wrote $CSV"
 column -s, -t < "$CSV"
+
+
+
+: <<'EOF'
+I think this works like a comment, just using this space to like put into words what this is testing so i remember.
+Hidden-layer scaling:
+hidden layer: 10,30,50,100,200
+batch size: 10
+epochs trained: 3
+learning rate: 3
+runs: 15
+
+mini-batch scaling
+hidden layer: 30
+batch size: 1, 5, 10, 25, 50, 100
+epochs trained: 3
+learning rate: 3
+runs: 18
+
+
+
+EOF
