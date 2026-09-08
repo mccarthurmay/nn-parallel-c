@@ -1,0 +1,3 @@
+look at matmult 
+387-390 b0 string c method
+matmult - triangle
