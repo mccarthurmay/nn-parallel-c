@@ -10,12 +10,15 @@
 set -euo pipefail
 cd "$SLURM_SUBMIT_DIR"
 
+module load gcc
 module load tau papi
 
 
 # Confirm counters exist
 papi_avail | grep -E "PAPI_TOT_INS|PAPI_L1_DCM" || true
 
+
+export TAU_OPTIONS="-optNoCompInst -optVerbose"
 export TAU_METRICS=TIME:PAPI_TOT_INS:PAPI_L1_DCM
 export TAU_PROFILE=1
 export TAU_CALLPATH=1
@@ -32,6 +35,11 @@ mkdir -p "$OUT"
 cd src
 tau_cc.sh -DTAU_ENABLED -O2 -std=c11 \
     -o network_tau main.c network.c mnist_loader.c sigFuncs.c -lm
+if ! nm network_tau | grep -q Tau_; then
+    echo "network_tau has no TAU symbols -- instrumentation silently reverted" >&2
+    exit 1
+fi
+
 
 cd "$OUT"
 "$SLURM_SUBMIT_DIR/src/network_tau" "$EPOCHS" "$BATCH" "$ETA" "$HIDDEN"
