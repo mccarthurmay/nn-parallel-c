@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=nn-scaling
-#SBATCH --output=scaling.out
+#SBATCH --output=scaling_%j.out
 #SBATCH --time=02:00:00
 #SBATCH --partition=Mem500
 #SBATCH --exclusive
@@ -10,7 +10,7 @@ set -euo pipefail
 cd "$SLURM_SUBMIT_DIR"
 
 
-CSV="$SLURM_SUBMIT_DIR/scaling.csv"
+CSV="$SLURM_SUBMIT_DIR/scaling_${SLURM_JOB_ID:-local}.csv"
 echo "hidden,batch,eta,epochs,threads,wall_s,s_per_epoch,correct,total,accuracy" > "$CSV"
 
 EPOCHS=3          
