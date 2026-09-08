@@ -15,7 +15,7 @@ which gcc as ld || { echo "as/ld still missing" >&2; exit 1; }
 rm -f ./*.o network_tau
 
 tau_cc.sh -B/usr/bin -DTAU_ENABLED -O2 -std=c11 \
-    -o network_tau main.c network.c mnist_loader.c sigFuncs.c -lm 2>&1 | tee tau_build.log
+    -o network_tau main.c network_tau_v1.c mnist_loader.c sigFuncs.c -lm 2>&1 | tee tau_build.log
 
 echo "--- TAU symbols (must be > 0) ---"
 nm network_tau | grep -c Tau_
