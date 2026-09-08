@@ -6,7 +6,7 @@ cd "$(dirname "$0")"
 export PATH="/usr/bin:$PATH"
 
 module load tau papi
-export TAU_OPTIONS="-optCompInst -optVerbose"
+export TAU_OPTIONS="-optCompInst -optTauSelectFile=select.tau -optVerbose"
 
 echo "--- toolchain ---"
 which gcc as ld || { echo "as/ld still missing" >&2; exit 1; }

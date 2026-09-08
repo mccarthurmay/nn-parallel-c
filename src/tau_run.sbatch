@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=nn-tau
-#SBATCH --output=tau.out
+#SBATCH --output=tau_%j.out
 #SBATCH --time=02:00:00
 #SBATCH --partition=Mem500
 #SBATCH --exclusive
@@ -8,7 +8,6 @@
 
 
 set -euo pipefail
-cd "$SLURM_SUBMIT_DIR"
 
 module load gcc
 module load tau papi
@@ -29,27 +28,20 @@ BATCH=10
 ETA=3.0
 HIDDEN=30
 
-OUT="$SLURM_SUBMIT_DIR/tau_${SLURM_JOB_ID:-local}"
+BIN="$REPO/src/network_tau"
+[ -x "$BIN" ] || { echo "no network_tau -- run: bash src/build_tau.sh" >&2; exit 1; }
+nm "$BIN" | grep -q Tau_ || { echo "network_tau is not instrumented -- rebuild" >&2; exit 1; }
+
+OUT="$REPO/tau_${SLURM_JOB_ID:-local}"
 mkdir -p "$OUT"
-
-cd src
-tau_cc.sh -DTAU_ENABLED -O2 -std=c11 \
-    -o network_tau main.c network.c mnist_loader.c sigFuncs.c -lm
-if ! nm network_tau | grep -q Tau_; then
-    echo "network_tau has no TAU symbols -- instrumentation silently reverted" >&2
-    exit 1
-fi
-
-
 cd "$OUT"
-"$SLURM_SUBMIT_DIR/src/network_tau" "$EPOCHS" "$BATCH" "$ETA" "$HIDDEN"
+
+"$BIN" "$EPOCHS" "$BATCH" "$ETA" "$HIDDEN"
 
 for d in MULTI__*; do
     echo "=============== $d ==============="
-    ( cd "$d" && pprof -a) | tee "../&(basename "$d").txt"
+    ( cd "$d" && pprof -a ) | tee "../$(basename "$d").txt"
 done
 
 echo "profiles in $OUT"
-
-
 
