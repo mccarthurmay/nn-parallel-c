@@ -724,6 +724,7 @@ int SGD(Network *net, const Dataset *train, int epochs, int mbs, double eta,
     // One iteration per epoch
     for (int e = 0; e < epochs; e++){
         shuffle(idx, n);
+        PROF_PHASE_START(p_epoch);
         // Walk through shuffled order in chunks of mbs
         for (int k = 0; k < n; k += mbs){
 
