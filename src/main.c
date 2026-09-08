@@ -12,6 +12,7 @@ Run mnist_loader.py once first to produce the .bin files in ../data
 
 #include "network.h"
 #include "mnist_loader.h"
+#include "profiling.h"
 
 #define TRAIN_PATH "../data/train.bin"
 #define TEST_PATH  "../data/test.bin"
@@ -25,6 +26,11 @@ Run mnist_loader.py once first to produce the .bin files in ../data
               // hidden, numbner of neurons in middle layer
 
 int main(int argc, char **argv){
+    PROF_INIT(argc, argv);
+    PROF_PHASE(p_load, "Phase_Load");
+    PROF_PHASE(p_init, "Phase_Init");
+    PROF_PHASE(p_train, "Phase_Train");
+
 
     if (argc != 5){
         fprintf(stderr, USAGE, argv[0], argv[0]);
@@ -46,6 +52,7 @@ int main(int argc, char **argv){
     srand(42);
 
     // dataset_load fills a caller-owned struct 
+    PROF_PHASE_START(p_load);
     Dataset train, test;
     if (dataset_load(TRAIN_PATH, &train) != 0 ||
         dataset_load(TEST_PATH,  &test)  != 0){
@@ -53,15 +60,18 @@ int main(int argc, char **argv){
         dataset_destroy(&train); dataset_destroy(&test);
         return 1;
     }
+    PROF_PHASE_STOP(p_load);
 
     if (mbs > train.n){
         fprintf(stderr, "mini_batch_size %d exceeds training set (%d)\n", mbs, train.n);
         dataset_destroy(&train); dataset_destroy(&test);
         return 1;
     }
-
+    
+    PROF_PHASE_START(p_init);
     int sizes[] = { train.d, hidden, 10 };
     Network *net = network_init(sizes, 3);
+    PROF_PHASE_STOP(p_init);
     if (net == NULL){
         fprintf(stderr, "network_init failed\n");
         dataset_destroy(&train); dataset_destroy(&test);
@@ -73,9 +83,13 @@ int main(int argc, char **argv){
     printf("train=%d  test=%d\n\n", train.n, test.n);
 
     clock_t t0 = clock();
+
+    PROF_PHASE_START(p_train);
     if (SGD(net, &train, epochs, mbs, eta, &test) != 0){
         fprintf(stderr, "SGD failed to allocate\n");
     }
+    PROF_PHASE_STOP(p_train);
+
     double secs = (double)(clock() - t0) / CLOCKS_PER_SEC;
     printf("\ntotal %.2f s   (%.2f s/epoch)\n", secs, secs / epochs);
 
