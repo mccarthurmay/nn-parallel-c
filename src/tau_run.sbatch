@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --job-name=nn-tau
-#SBATCH --output=tau.out
+#SBATCH --output=tau_%j.out
 #SBATCH --time=02:00:00
 #SBATCH --partition=Mem500
 #SBATCH --exclusive

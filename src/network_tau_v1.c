@@ -291,8 +291,6 @@ output      double*, sizes[num_layers-1] doubles, always 10 for mnist.
 scratch     2*max_sizes doubles
 */
 void feedforward(const Network *net, const double *input, double *output, double *scratch){
-    PROF_TIMER(t, "feedforward");
-    PROF_START(t);
     // cur = activiations going into the current layer
     // points at first half of scratch block
     double *cur = scratch;
@@ -326,7 +324,6 @@ void feedforward(const Network *net, const double *input, double *output, double
     for (int i = 0; i < net->sizes[net ->num_layers -1]; i++){
         output[i] = cur[i];
     }
-    PROF_STOP(t);
 }
 
 
@@ -358,8 +355,6 @@ ws          workspace *, scratch space allocated by SGD
 */
 void backprop(const Network *net, const float *x, unsigned char label,
         double **nabla_b, double **nabla_w, Workspace *ws){
-    PROF_TIMER(t, "backprop");
-    PROF_START(t);
     int L = net->num_layers - 2; // idx of the last weight layer
     int classes = net->sizes[net->num_layers - 1];
 
@@ -433,7 +428,6 @@ void backprop(const Network *net, const float *x, unsigned char label,
             }
         }
     }
-    PROF_STOP(t);
 }
 
 
@@ -631,8 +625,6 @@ ws          Workspace *
     
 */
 void update_mini_batch(Network *net, const Dataset *data, const int *idx, int m, double eta, Grad *g, Workspace *ws){
-    PROF_TIMER(t, "update_mini_batch");
-    PROF_START(t);
     // Zero all calls to prevent batch 2 gradient from stacking on batch 1
     for (int l = 0; l < net->num_layers - 1; l++){
         memset(g->nabla_b[l], 0, (size_t)net->sizes[l+1] * sizeof(double));
@@ -668,7 +660,6 @@ void update_mini_batch(Network *net, const Dataset *data, const int *idx, int m,
         for (int r = 0; r < rows; r++)
             net->biases[l][r] -= scale * g->nabla_b[l][r];
     }
-    PROF_STOP(t);
 }
 
 

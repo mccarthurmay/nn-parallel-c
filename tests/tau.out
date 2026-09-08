@@ -1,0 +1,218 @@
+PAPI_L1_DCM  0x80000000  Yes   No   Level 1 data cache misses
+PAPI_TOT_INS 0x80000032  Yes   No   Instructions completed
+net 784-30-10   epochs=3  batch=10  eta=3.00
+train=50000  test=10000
+
+Epoch 0: 8186 / 10000
+Epoch 1: 8375 / 10000
+Epoch 2: 8440 / 10000
+
+total 12.49 s   (4.16 s/epoch)
+=============== MULTI__PAPI_L1_DCM ===============
+Reading Profile files in profile.*
+
+NODE 0;CONTEXT 0;THREAD 0:
+---------------------------------------------------------------------------------------
+%Time   Exclusive   Inclusive       #Call      #Subrs Count/Call Name
+           counts total counts                            
+---------------------------------------------------------------------------------------
+100.0   8.183E+04    1.32E+09           1           1 1319628505 .TAU application
+100.0        2682    1.32E+09           1           6 1319546675 .TAU application => main [{/home/c_rothschild/nn-parallel-c/src/main.c} {28,0}]
+100.0        2682    1.32E+09           1           6 1319546675 main [{/home/c_rothschild/nn-parallel-c/src/main.c} {28,0}]
+ 99.9         716   1.319E+09           1           1 1318655639 .TAU application => main [{/home/c_rothschild/nn-parallel-c/src/main.c} {28,0}] => Phase_Train
+ 99.9         716   1.319E+09           1           1 1318655639 Phase_Train
+ 99.9        3591   1.319E+09           1          13 1318654923 .TAU application => main [{/home/c_rothschild/nn-parallel-c/src/main.c} {28,0}] => Phase_Train => SGD [{/home/c_rothschild/nn-parallel-c/src/network.c} {480,0}]
+ 99.9        3591   1.319E+09           1          13 1318654923 SGD [{/home/c_rothschild/nn-parallel-c/src/network.c} {480,0}]
+ 91.2   5.315E+05   1.203E+09           3       15000  401121374 Phase_TrainEpoch
+ 91.2   5.315E+05   1.203E+09           3       15000  401121374 main [{/home/c_rothschild/nn-parallel-c/src/main.c} {28,0}] => Phase_Train => SGD [{/home/c_rothschild/nn-parallel-c/src/network.c} {480,0}] => Phase_TrainEpoch
+ 91.1   2.294E+06   1.203E+09       15000       15000      80189 Phase_Train => SGD [{/home/c_rothschild/nn-parallel-c/src/network.c} {480,0}] => Phase_TrainEpoch => update_mini_batch [{/home/c_rothschild/nn-parallel-c/src/network.c} {440,0}]
+ 91.1   2.294E+06   1.203E+09       15000       15000      80189 update_mini_batch [{/home/c_rothschild/nn-parallel-c/src/network.c} {440,0}]
+ 91.0   1.442E+08   1.201E+09       15000      150000      80036 SGD [{/home/c_rothschild/nn-parallel-c/src/network.c} {480,0}] => Phase_TrainEpoch => update_mini_batch [{/home/c_rothschild/nn-parallel-c/src/network.c} {440,0}] => update_mini_batch
+ 91.0   1.442E+08   1.201E+09       15000      150000      80036 update_mini_batch
+ 80.0   2.347E+07   1.056E+09      150000      150000       7042 Phase_TrainEpoch => update_mini_batch [{/home/c_rothschild/nn-parallel-c/src/network.c} {440,0}] => update_mini_batch => backprop [{/home/c_rothschild/nn-parallel-c/src/network.c} {258,0}]
+ 80.0   2.347E+07   1.056E+09      150000      150000       7042 backprop [{/home/c_rothschild/nn-parallel-c/src/network.c} {258,0}]
+ 78.3   5.323E+08   1.033E+09      150000      633363       6886 backprop
+ 78.3   5.323E+08   1.033E+09      150000      633363       6886 update_mini_batch [{/home/c_rothschild/nn-parallel-c/src/network.c} {440,0}] => update_mini_batch => backprop [{/home/c_rothschild/nn-parallel-c/src/network.c} {258,0}] => backprop
+ 44.0   5.801E+08   5.801E+08      360000           0       1611 matmult [{/home/c_rothschild/nn-parallel-c/src/network.c} {190,0}]
+ 36.7   4.837E+08   4.837E+08      300000           0       1612 update_mini_batch => backprop [{/home/c_rothschild/nn-parallel-c/src/network.c} {258,0}] => backprop => matmult [{/home/c_rothschild/nn-parallel-c/src/network.c} {190,0}]
+  8.7        1053   1.152E+08           3           3   38397453 Phase_Evaluate
+  8.7        1053   1.152E+08           3           3   38397453 main [{/home/c_rothschild/nn-parallel-c/src/main.c} {28,0}] => Phase_Train => SGD [{/home/c_rothschild/nn-parallel-c/src/network.c} {480,0}] => Phase_Evaluate
+  8.7   5.966E+06   1.152E+08           3       30000   38397102 Phase_Train => SGD [{/home/c_rothschild/nn-parallel-c/src/network.c} {480,0}] => Phase_Evaluate => evaluate [{/home/c_rothschild/nn-parallel-c/src/network.c} {354,0}]
+  8.7   5.966E+06   1.152E+08           3       30000   38397102 evaluate [{/home/c_rothschild/nn-parallel-c/src/network.c} {354,0}]
+  8.3   3.075E+06   1.092E+08       30000       30000       3641 SGD [{/home/c_rothschild/nn-parallel-c/src/network.c} {480,0}] => Phase_Evaluate => evaluate [{/home/c_rothschild/nn-parallel-c/src/network.c} {354,0}] => feedforward [{/home/c_rothschild/nn-parallel-c/src/network.c} {223,0}]
+  8.3   3.075E+06   1.092E+08       30000       30000       3641 feedforward [{/home/c_rothschild/nn-parallel-c/src/network.c} {223,0}]
+  8.0   9.724E+06   1.062E+08       30000       60000       3538 Phase_Evaluate => evaluate [{/home/c_rothschild/nn-parallel-c/src/network.c} {354,0}] => feedforward [{/home/c_rothschild/nn-parallel-c/src/network.c} {223,0}] => feedforward
+  8.0   9.724E+06   1.062E+08       30000       60000       3538 feedforward
+  7.3   9.643E+07   9.643E+07       60000           0       1607 evaluate [{/home/c_rothschild/nn-parallel-c/src/network.c} {354,0}] => feedforward [{/home/c_rothschild/nn-parallel-c/src/network.c} {223,0}] => feedforward => matmult [{/home/c_rothschild/nn-parallel-c/src/network.c} {190,0}]
+  0.6   8.063E+06   8.063E+06      100001           0         81 matmult_T [{/home/c_rothschild/nn-parallel-c/src/network.c} {205,0}] [THROTTLED]
+  0.6   8.063E+06   8.063E+06      100001           0         81 update_mini_batch => backprop [{/home/c_rothschild/nn-parallel-c/src/network.c} {258,0}] => backprop => matmult_T [{/home/c_rothschild/nn-parallel-c/src/network.c} {205,0}]
+  0.4   4.955E+06   4.955E+06      100001           0         50 cost_derivative [{/home/c_rothschild/nn-parallel-c/src/network.c} {338,0}] [THROTTLED]
+  0.4   4.955E+06   4.955E+06      100001           0         50 update_mini_batch => backprop [{/home/c_rothschild/nn-parallel-c/src/network.c} {258,0}] => backprop => cost_derivative [{/home/c_rothschild/nn-parallel-c/src/network.c} {338,0}]
+  0.2   2.498E+06   3.268E+06      100001       66641         33 sigmoid_prime [{/home/c_rothschild/nn-parallel-c/src/sigFuncs.c} {11,0}] [THROTTLED]
+  0.2   2.498E+06   3.268E+06      100001       66641         33 update_mini_batch => backprop [{/home/c_rothschild/nn-parallel-c/src/network.c} {258,0}] => backprop => sigmoid_prime [{/home/c_rothschild/nn-parallel-c/src/sigFuncs.c} {11,0}]
+  0.1   1.367E+06   1.367E+06      100001           0         14 sigmoid [{/home/c_rothschild/nn-parallel-c/src/sigFuncs.c} {6,0}] [THROTTLED]
+  0.1        5591   8.836E+05           1           1     883626 .TAU application => main [{/home/c_rothschild/nn-parallel-c/src/main.c} {28,0}] => Phase_Init
+  0.1        5591   8.836E+05           1           1     883626 Phase_Init
+  0.1   3.174E+05    8.78E+05           1       23860     878035 .TAU application => main [{/home/c_rothschild/nn-parallel-c/src/main.c} {28,0}] => Phase_Init => network_init [{/home/c_rothschild/nn-parallel-c/src/network.c} {31,0}]
+  0.1   3.174E+05    8.78E+05           1       23860     878035 network_init [{/home/c_rothschild/nn-parallel-c/src/network.c} {31,0}]
+  0.1   7.705E+05   7.705E+05       66641           0         12 backprop [{/home/c_rothschild/nn-parallel-c/src/network.c} {258,0}] => backprop => sigmoid_prime [{/home/c_rothschild/nn-parallel-c/src/sigFuncs.c} {11,0}] => sigmoid [{/home/c_rothschild/nn-parallel-c/src/sigFuncs.c} {6,0}]
+  0.0   5.967E+05   5.967E+05       33360           0         18 update_mini_batch => backprop [{/home/c_rothschild/nn-parallel-c/src/network.c} {258,0}] => backprop => sigmoid [{/home/c_rothschild/nn-parallel-c/src/sigFuncs.c} {6,0}]
+  0.0   5.607E+05   5.607E+05       23860           0         23 main [{/home/c_rothschild/nn-parallel-c/src/main.c} {28,0}] => Phase_Init => network_init [{/home/c_rothschild/nn-parallel-c/src/network.c} {31,0}] => randn [{/home/c_rothschild/nn-parallel-c/src/network.c} {23,0}]
+  0.0   5.607E+05   5.607E+05       23860           0         23 randn [{/home/c_rothschild/nn-parallel-c/src/network.c} {23,0}]
+  0.0   9.364E+04   9.364E+04           3           0      31213 main [{/home/c_rothschild/nn-parallel-c/src/main.c} {28,0}] => Phase_Train => SGD [{/home/c_rothschild/nn-parallel-c/src/network.c} {480,0}] => shuffle [{/home/c_rothschild/nn-parallel-c/src/network.c} {472,0}]
+  0.0   9.364E+04   9.364E+04           3           0      31213 shuffle [{/home/c_rothschild/nn-parallel-c/src/network.c} {472,0}]
+  0.0        1781        3803           1           2       3803 .TAU application => main [{/home/c_rothschild/nn-parallel-c/src/main.c} {28,0}] => Phase_Load
+  0.0        1781        3803           1           2       3803 Phase_Load
+  0.0        2022        2022           2           0       1011 .TAU application => main [{/home/c_rothschild/nn-parallel-c/src/main.c} {28,0}] => Phase_Load => dataset_load [{/home/c_rothschild/nn-parallel-c/src/mnist_loader.c} {20,0}]
+  0.0        2022        2022           2           0       1011 dataset_load [{/home/c_rothschild/nn-parallel-c/src/mnist_loader.c} {20,0}]
+  0.0         640         640           2           0        320 .TAU application => main [{/home/c_rothschild/nn-parallel-c/src/main.c} {28,0}] => dataset_destroy [{/home/c_rothschild/nn-parallel-c/src/mnist_loader.c} {87,0}]
+  0.0         640         640           2           0        320 dataset_destroy [{/home/c_rothschild/nn-parallel-c/src/mnist_loader.c} {87,0}]
+  0.0         346         346           1           0        346 main [{/home/c_rothschild/nn-parallel-c/src/main.c} {28,0}] => Phase_Train => SGD [{/home/c_rothschild/nn-parallel-c/src/network.c} {480,0}] => workspace_destroy [{/home/c_rothschild/nn-parallel-c/src/network.c} {154,0}]
+  0.0         346         346           1           0        346 workspace_destroy [{/home/c_rothschild/nn-parallel-c/src/network.c} {154,0}]
+  0.0         313         313           1           0        313 main [{/home/c_rothschild/nn-parallel-c/src/main.c} {28,0}] => Phase_Train => SGD [{/home/c_rothschild/nn-parallel-c/src/network.c} {480,0}] => workspace_init [{/home/c_rothschild/nn-parallel-c/src/network.c} {114,0}]
+  0.0         313         313           1           0        313 workspace_init [{/home/c_rothschild/nn-parallel-c/src/network.c} {114,0}]
+  0.0         303         303           1           0        303 grad_init [{/home/c_rothschild/nn-parallel-c/src/network.c} {400,0}]
+  0.0         303         303           1           0        303 main [{/home/c_rothschild/nn-parallel-c/src/main.c} {28,0}] => Phase_Train => SGD [{/home/c_rothschild/nn-parallel-c/src/network.c} {480,0}] => grad_init [{/home/c_rothschild/nn-parallel-c/src/network.c} {400,0}]
+  0.0         285         285           1           0        285 .TAU application => main [{/home/c_rothschild/nn-parallel-c/src/main.c} {28,0}] => network_destroy [{/home/c_rothschild/nn-parallel-c/src/network.c} {87,0}]
+  0.0         285         285           1           0        285 network_destroy [{/home/c_rothschild/nn-parallel-c/src/network.c} {87,0}]
+  0.0         253         253           1           0        253 grad_destroy [{/home/c_rothschild/nn-parallel-c/src/network.c} {424,0}]
+  0.0         253         253           1           0        253 main [{/home/c_rothschild/nn-parallel-c/src/main.c} {28,0}] => Phase_Train => SGD [{/home/c_rothschild/nn-parallel-c/src/network.c} {480,0}] => grad_destroy [{/home/c_rothschild/nn-parallel-c/src/network.c} {424,0}]
+=============== MULTI__PAPI_TOT_INS ===============
+Reading Profile files in profile.*
+
+NODE 0;CONTEXT 0;THREAD 0:
+---------------------------------------------------------------------------------------
+%Time   Exclusive   Inclusive       #Call      #Subrs Count/Call Name
+           counts total counts                            
+---------------------------------------------------------------------------------------
+100.0   1.055E+07   7.778E+10           1           1 77778196614 .TAU application
+100.0   1.155E+05   7.777E+10           1           6 77767650382 .TAU application => main [{/home/c_rothschild/nn-parallel-c/src/main.c} {28,0}]
+100.0   1.155E+05   7.777E+10           1           6 77767650382 main [{/home/c_rothschild/nn-parallel-c/src/main.c} {28,0}]
+ 99.8   2.651E+04   7.761E+10           1           1 77614595492 .TAU application => main [{/home/c_rothschild/nn-parallel-c/src/main.c} {28,0}] => Phase_Train
+ 99.8   2.651E+04   7.761E+10           1           1 77614595492 Phase_Train
+ 99.8   3.345E+05   7.761E+10           1          13 77614568985 .TAU application => main [{/home/c_rothschild/nn-parallel-c/src/main.c} {28,0}] => Phase_Train => SGD [{/home/c_rothschild/nn-parallel-c/src/network.c} {480,0}]
+ 99.8   3.345E+05   7.761E+10           1          13 77614568985 SGD [{/home/c_rothschild/nn-parallel-c/src/network.c} {480,0}]
+ 92.2   5.035E+07   7.172E+10           3       15000 23905232791 Phase_TrainEpoch
+ 92.2   5.035E+07   7.172E+10           3       15000 23905232791 main [{/home/c_rothschild/nn-parallel-c/src/main.c} {28,0}] => Phase_Train => SGD [{/home/c_rothschild/nn-parallel-c/src/network.c} {480,0}] => Phase_TrainEpoch
+ 92.1   8.504E+07   7.167E+10       15000       15000    4777690 Phase_Train => SGD [{/home/c_rothschild/nn-parallel-c/src/network.c} {480,0}] => Phase_TrainEpoch => update_mini_batch [{/home/c_rothschild/nn-parallel-c/src/network.c} {440,0}]
+ 92.1   8.504E+07   7.167E+10       15000       15000    4777690 update_mini_batch [{/home/c_rothschild/nn-parallel-c/src/network.c} {440,0}]
+ 92.0   3.721E+09   7.158E+10       15000      150000    4772021 SGD [{/home/c_rothschild/nn-parallel-c/src/network.c} {480,0}] => Phase_TrainEpoch => update_mini_batch [{/home/c_rothschild/nn-parallel-c/src/network.c} {440,0}] => update_mini_batch
+ 92.0   3.721E+09   7.158E+10       15000      150000    4772021 update_mini_batch
+ 87.2   8.551E+08   6.786E+10      150000      150000     452394 Phase_TrainEpoch => update_mini_batch [{/home/c_rothschild/nn-parallel-c/src/network.c} {440,0}] => update_mini_batch => backprop [{/home/c_rothschild/nn-parallel-c/src/network.c} {258,0}]
+ 87.2   8.551E+08   6.786E+10      150000      150000     452394 backprop [{/home/c_rothschild/nn-parallel-c/src/network.c} {258,0}]
+ 86.1    4.31E+10     6.7E+10      150000      633363     446694 backprop
+ 86.1    4.31E+10     6.7E+10      150000      633363     446694 update_mini_batch [{/home/c_rothschild/nn-parallel-c/src/network.c} {440,0}] => update_mini_batch => backprop [{/home/c_rothschild/nn-parallel-c/src/network.c} {258,0}] => backprop
+ 34.4   2.679E+10   2.679E+10      360000           0      74407 matmult [{/home/c_rothschild/nn-parallel-c/src/network.c} {190,0}]
+ 28.7   2.232E+10   2.232E+10      300000           0      74401 update_mini_batch => backprop [{/home/c_rothschild/nn-parallel-c/src/network.c} {258,0}] => backprop => matmult [{/home/c_rothschild/nn-parallel-c/src/network.c} {190,0}]
+  7.6   3.912E+04   5.888E+09           3           3 1962509127 Phase_Evaluate
+  7.6   3.912E+04   5.888E+09           3           3 1962509127 main [{/home/c_rothschild/nn-parallel-c/src/main.c} {28,0}] => Phase_Train => SGD [{/home/c_rothschild/nn-parallel-c/src/network.c} {480,0}] => Phase_Evaluate
+  7.6   2.439E+08   5.887E+09           3       30000 1962496088 Phase_Train => SGD [{/home/c_rothschild/nn-parallel-c/src/network.c} {480,0}] => Phase_Evaluate => evaluate [{/home/c_rothschild/nn-parallel-c/src/network.c} {354,0}]
+  7.6   2.439E+08   5.887E+09           3       30000 1962496088 evaluate [{/home/c_rothschild/nn-parallel-c/src/network.c} {354,0}]
+  7.3   1.724E+08   5.644E+09       30000       30000     188119 SGD [{/home/c_rothschild/nn-parallel-c/src/network.c} {480,0}] => Phase_Evaluate => evaluate [{/home/c_rothschild/nn-parallel-c/src/network.c} {354,0}] => feedforward [{/home/c_rothschild/nn-parallel-c/src/network.c} {223,0}]
+  7.3   1.724E+08   5.644E+09       30000       30000     188119 feedforward [{/home/c_rothschild/nn-parallel-c/src/network.c} {223,0}]
+  7.0   1.005E+09   5.471E+09       30000       60000     182372 Phase_Evaluate => evaluate [{/home/c_rothschild/nn-parallel-c/src/network.c} {354,0}] => feedforward [{/home/c_rothschild/nn-parallel-c/src/network.c} {223,0}] => feedforward
+  7.0   1.005E+09   5.471E+09       30000       60000     182372 feedforward
+  5.7   4.466E+09   4.466E+09       60000           0      74436 evaluate [{/home/c_rothschild/nn-parallel-c/src/network.c} {354,0}] => feedforward [{/home/c_rothschild/nn-parallel-c/src/network.c} {223,0}] => feedforward => matmult [{/home/c_rothschild/nn-parallel-c/src/network.c} {190,0}]
+  0.9   5.486E+08   7.303E+08      100001       66641       7303 sigmoid_prime [{/home/c_rothschild/nn-parallel-c/src/sigFuncs.c} {11,0}] [THROTTLED]
+  0.9   5.486E+08   7.303E+08      100001       66641       7303 update_mini_batch => backprop [{/home/c_rothschild/nn-parallel-c/src/network.c} {258,0}] => backprop => sigmoid_prime [{/home/c_rothschild/nn-parallel-c/src/sigFuncs.c} {11,0}]
+  0.6   4.942E+08   4.942E+08      100001           0       4942 matmult_T [{/home/c_rothschild/nn-parallel-c/src/network.c} {205,0}] [THROTTLED]
+  0.6   4.942E+08   4.942E+08      100001           0       4942 update_mini_batch => backprop [{/home/c_rothschild/nn-parallel-c/src/network.c} {258,0}] => backprop => matmult_T [{/home/c_rothschild/nn-parallel-c/src/network.c} {205,0}]
+  0.4   2.725E+08   2.725E+08      100001           0       2725 cost_derivative [{/home/c_rothschild/nn-parallel-c/src/network.c} {338,0}] [THROTTLED]
+  0.4   2.725E+08   2.725E+08      100001           0       2725 update_mini_batch => backprop [{/home/c_rothschild/nn-parallel-c/src/network.c} {258,0}] => backprop => cost_derivative [{/home/c_rothschild/nn-parallel-c/src/network.c} {338,0}]
+  0.4   2.725E+08   2.725E+08      100001           0       2725 sigmoid [{/home/c_rothschild/nn-parallel-c/src/sigFuncs.c} {6,0}] [THROTTLED]
+  0.2   1.817E+08   1.817E+08       66641           0       2727 backprop [{/home/c_rothschild/nn-parallel-c/src/network.c} {258,0}] => backprop => sigmoid_prime [{/home/c_rothschild/nn-parallel-c/src/sigFuncs.c} {11,0}] => sigmoid [{/home/c_rothschild/nn-parallel-c/src/sigFuncs.c} {6,0}]
+  0.2     2.3E+06   1.522E+08           1           1  152204502 .TAU application => main [{/home/c_rothschild/nn-parallel-c/src/main.c} {28,0}] => Phase_Init
+  0.2     2.3E+06   1.522E+08           1           1  152204502 Phase_Init
+  0.2   7.967E+07   1.499E+08           1       23860  149904664 .TAU application => main [{/home/c_rothschild/nn-parallel-c/src/main.c} {28,0}] => Phase_Init => network_init [{/home/c_rothschild/nn-parallel-c/src/network.c} {31,0}]
+  0.2   7.967E+07   1.499E+08           1       23860  149904664 network_init [{/home/c_rothschild/nn-parallel-c/src/network.c} {31,0}]
+  0.1   9.072E+07   9.072E+07       33360           0       2719 update_mini_batch => backprop [{/home/c_rothschild/nn-parallel-c/src/network.c} {258,0}] => backprop => sigmoid [{/home/c_rothschild/nn-parallel-c/src/sigFuncs.c} {6,0}]
+  0.1   7.023E+07   7.023E+07       23860           0       2944 main [{/home/c_rothschild/nn-parallel-c/src/main.c} {28,0}] => Phase_Init => network_init [{/home/c_rothschild/nn-parallel-c/src/network.c} {31,0}] => randn [{/home/c_rothschild/nn-parallel-c/src/network.c} {23,0}]
+  0.1   7.023E+07   7.023E+07       23860           0       2944 randn [{/home/c_rothschild/nn-parallel-c/src/network.c} {23,0}]
+  0.0   1.096E+07   1.096E+07           3           0    3652285 main [{/home/c_rothschild/nn-parallel-c/src/main.c} {28,0}] => Phase_Train => SGD [{/home/c_rothschild/nn-parallel-c/src/network.c} {480,0}] => shuffle [{/home/c_rothschild/nn-parallel-c/src/network.c} {472,0}]
+  0.0   1.096E+07   1.096E+07           3           0    3652285 shuffle [{/home/c_rothschild/nn-parallel-c/src/network.c} {472,0}]
+  0.0   6.772E+05   7.087E+05           1           2     708733 .TAU application => main [{/home/c_rothschild/nn-parallel-c/src/main.c} {28,0}] => Phase_Load
+  0.0   6.772E+05   7.087E+05           1           2     708733 Phase_Load
+  0.0    3.15E+04    3.15E+04           2           0      15749 .TAU application => main [{/home/c_rothschild/nn-parallel-c/src/main.c} {28,0}] => Phase_Load => dataset_load [{/home/c_rothschild/nn-parallel-c/src/mnist_loader.c} {20,0}]
+  0.0    3.15E+04    3.15E+04           2           0      15749 dataset_load [{/home/c_rothschild/nn-parallel-c/src/mnist_loader.c} {20,0}]
+  0.0   1.403E+04   1.403E+04           2           0       7014 .TAU application => main [{/home/c_rothschild/nn-parallel-c/src/main.c} {28,0}] => dataset_destroy [{/home/c_rothschild/nn-parallel-c/src/mnist_loader.c} {87,0}]
+  0.0   1.403E+04   1.403E+04           2           0       7014 dataset_destroy [{/home/c_rothschild/nn-parallel-c/src/mnist_loader.c} {87,0}]
+  0.0    1.37E+04    1.37E+04           1           0      13704 main [{/home/c_rothschild/nn-parallel-c/src/main.c} {28,0}] => Phase_Train => SGD [{/home/c_rothschild/nn-parallel-c/src/network.c} {480,0}] => workspace_init [{/home/c_rothschild/nn-parallel-c/src/network.c} {114,0}]
+  0.0    1.37E+04    1.37E+04           1           0      13704 workspace_init [{/home/c_rothschild/nn-parallel-c/src/network.c} {114,0}]
+  0.0   1.326E+04   1.326E+04           1           0      13265 grad_init [{/home/c_rothschild/nn-parallel-c/src/network.c} {400,0}]
+  0.0   1.326E+04   1.326E+04           1           0      13265 main [{/home/c_rothschild/nn-parallel-c/src/main.c} {28,0}] => Phase_Train => SGD [{/home/c_rothschild/nn-parallel-c/src/network.c} {480,0}] => grad_init [{/home/c_rothschild/nn-parallel-c/src/network.c} {400,0}]
+  0.0   1.279E+04   1.279E+04           1           0      12787 main [{/home/c_rothschild/nn-parallel-c/src/main.c} {28,0}] => Phase_Train => SGD [{/home/c_rothschild/nn-parallel-c/src/network.c} {480,0}] => workspace_destroy [{/home/c_rothschild/nn-parallel-c/src/network.c} {154,0}]
+  0.0   1.279E+04   1.279E+04           1           0      12787 workspace_destroy [{/home/c_rothschild/nn-parallel-c/src/network.c} {154,0}]
+  0.0   1.214E+04   1.214E+04           1           0      12143 .TAU application => main [{/home/c_rothschild/nn-parallel-c/src/main.c} {28,0}] => network_destroy [{/home/c_rothschild/nn-parallel-c/src/network.c} {87,0}]
+  0.0   1.214E+04   1.214E+04           1           0      12143 network_destroy [{/home/c_rothschild/nn-parallel-c/src/network.c} {87,0}]
+  0.0   1.214E+04   1.214E+04           1           0      12136 grad_destroy [{/home/c_rothschild/nn-parallel-c/src/network.c} {424,0}]
+  0.0   1.214E+04   1.214E+04           1           0      12136 main [{/home/c_rothschild/nn-parallel-c/src/main.c} {28,0}] => Phase_Train => SGD [{/home/c_rothschild/nn-parallel-c/src/network.c} {480,0}] => grad_destroy [{/home/c_rothschild/nn-parallel-c/src/network.c} {424,0}]
+=============== MULTI__TIME ===============
+Reading Profile files in profile.*
+
+NODE 0;CONTEXT 0;THREAD 0:
+---------------------------------------------------------------------------------------
+%Time    Exclusive    Inclusive       #Call      #Subrs  Inclusive Name
+              msec   total msec                          usec/call 
+---------------------------------------------------------------------------------------
+100.0            9       12,764           1           1   12764314 .TAU application
+ 99.9        0.136       12,754           1           6   12754389 .TAU application => main [{/home/c_rothschild/nn-parallel-c/src/main.c} {28,0}]
+ 99.9        0.136       12,754           1           6   12754389 main [{/home/c_rothschild/nn-parallel-c/src/main.c} {28,0}]
+ 97.9        0.022       12,492           1           1   12492207 .TAU application => main [{/home/c_rothschild/nn-parallel-c/src/main.c} {28,0}] => Phase_Train
+ 97.9        0.022       12,492           1           1   12492207 Phase_Train
+ 97.9        0.785       12,492           1          13   12492185 .TAU application => main [{/home/c_rothschild/nn-parallel-c/src/main.c} {28,0}] => Phase_Train => SGD [{/home/c_rothschild/nn-parallel-c/src/network.c} {480,0}]
+ 97.9        0.785       12,492           1          13   12492185 SGD [{/home/c_rothschild/nn-parallel-c/src/network.c} {480,0}]
+ 89.0           41       11,360           3       15000    3786891 Phase_TrainEpoch
+ 89.0           41       11,360           3       15000    3786891 main [{/home/c_rothschild/nn-parallel-c/src/main.c} {28,0}] => Phase_Train => SGD [{/home/c_rothschild/nn-parallel-c/src/network.c} {480,0}] => Phase_TrainEpoch
+ 88.7           68       11,319       15000       15000        755 Phase_Train => SGD [{/home/c_rothschild/nn-parallel-c/src/network.c} {480,0}] => Phase_TrainEpoch => update_mini_batch [{/home/c_rothschild/nn-parallel-c/src/network.c} {440,0}]
+ 88.7           68       11,319       15000       15000        755 update_mini_batch [{/home/c_rothschild/nn-parallel-c/src/network.c} {440,0}]
+ 88.1          773       11,250       15000      150000        750 SGD [{/home/c_rothschild/nn-parallel-c/src/network.c} {480,0}] => Phase_TrainEpoch => update_mini_batch [{/home/c_rothschild/nn-parallel-c/src/network.c} {440,0}] => update_mini_batch
+ 88.1          773       11,250       15000      150000        750 update_mini_batch
+ 82.1          613       10,476      150000      150000         70 Phase_TrainEpoch => update_mini_batch [{/home/c_rothschild/nn-parallel-c/src/network.c} {440,0}] => update_mini_batch => backprop [{/home/c_rothschild/nn-parallel-c/src/network.c} {258,0}]
+ 82.1          613       10,476      150000      150000         70 backprop [{/home/c_rothschild/nn-parallel-c/src/network.c} {258,0}]
+ 77.3        6,151        9,863      150000      633363         66 backprop
+ 77.3        6,151        9,863      150000      633363         66 update_mini_batch [{/home/c_rothschild/nn-parallel-c/src/network.c} {440,0}] => update_mini_batch => backprop [{/home/c_rothschild/nn-parallel-c/src/network.c} {258,0}] => backprop
+ 29.4        3,746        3,746      360000           0         10 matmult [{/home/c_rothschild/nn-parallel-c/src/network.c} {190,0}]
+ 24.5        3,124        3,124      300000           0         10 update_mini_batch => backprop [{/home/c_rothschild/nn-parallel-c/src/network.c} {258,0}] => backprop => matmult [{/home/c_rothschild/nn-parallel-c/src/network.c} {190,0}]
+  8.8        0.065        1,128           3           3     376249 Phase_Evaluate
+  8.8        0.065        1,128           3           3     376249 main [{/home/c_rothschild/nn-parallel-c/src/main.c} {28,0}] => Phase_Train => SGD [{/home/c_rothschild/nn-parallel-c/src/network.c} {480,0}] => Phase_Evaluate
+  8.8           99        1,128           3       30000     376228 Phase_Train => SGD [{/home/c_rothschild/nn-parallel-c/src/network.c} {480,0}] => Phase_Evaluate => evaluate [{/home/c_rothschild/nn-parallel-c/src/network.c} {354,0}]
+  8.8           99        1,128           3       30000     376228 evaluate [{/home/c_rothschild/nn-parallel-c/src/network.c} {354,0}]
+  8.1          108        1,028       30000       30000         34 SGD [{/home/c_rothschild/nn-parallel-c/src/network.c} {480,0}] => Phase_Evaluate => evaluate [{/home/c_rothschild/nn-parallel-c/src/network.c} {354,0}] => feedforward [{/home/c_rothschild/nn-parallel-c/src/network.c} {223,0}]
+  8.1          108        1,028       30000       30000         34 feedforward [{/home/c_rothschild/nn-parallel-c/src/network.c} {223,0}]
+  7.2          297          920       30000       60000         31 Phase_Evaluate => evaluate [{/home/c_rothschild/nn-parallel-c/src/network.c} {354,0}] => feedforward [{/home/c_rothschild/nn-parallel-c/src/network.c} {223,0}] => feedforward
+  7.2          297          920       30000       60000         31 feedforward
+  4.9          622          622       60000           0         10 evaluate [{/home/c_rothschild/nn-parallel-c/src/network.c} {354,0}] => feedforward [{/home/c_rothschild/nn-parallel-c/src/network.c} {223,0}] => feedforward => matmult [{/home/c_rothschild/nn-parallel-c/src/network.c} {190,0}]
+  2.6          277          338      100001       66641          3 sigmoid_prime [{/home/c_rothschild/nn-parallel-c/src/sigFuncs.c} {11,0}] [THROTTLED]
+  2.6          277          338      100001       66641          3 update_mini_batch => backprop [{/home/c_rothschild/nn-parallel-c/src/network.c} {258,0}] => backprop => sigmoid_prime [{/home/c_rothschild/nn-parallel-c/src/sigFuncs.c} {11,0}]
+  1.4        0.181          173           1           2     173923 .TAU application => main [{/home/c_rothschild/nn-parallel-c/src/main.c} {28,0}] => Phase_Load
+  1.4        0.181          173           1           2     173923 Phase_Load
+  1.4          173          173           2           0      86871 .TAU application => main [{/home/c_rothschild/nn-parallel-c/src/main.c} {28,0}] => Phase_Load => dataset_load [{/home/c_rothschild/nn-parallel-c/src/mnist_loader.c} {20,0}]
+  1.4          173          173           2           0      86871 dataset_load [{/home/c_rothschild/nn-parallel-c/src/mnist_loader.c} {20,0}]
+  0.9          118          118      100001           0          1 matmult_T [{/home/c_rothschild/nn-parallel-c/src/network.c} {205,0}] [THROTTLED]
+  0.9          118          118      100001           0          1 update_mini_batch => backprop [{/home/c_rothschild/nn-parallel-c/src/network.c} {258,0}] => backprop => matmult_T [{/home/c_rothschild/nn-parallel-c/src/network.c} {205,0}]
+  0.8           98           98      100001           0          1 cost_derivative [{/home/c_rothschild/nn-parallel-c/src/network.c} {338,0}] [THROTTLED]
+  0.8           98           98      100001           0          1 update_mini_batch => backprop [{/home/c_rothschild/nn-parallel-c/src/network.c} {258,0}] => backprop => cost_derivative [{/home/c_rothschild/nn-parallel-c/src/network.c} {338,0}]
+  0.7           91           91      100001           0          1 sigmoid [{/home/c_rothschild/nn-parallel-c/src/sigFuncs.c} {6,0}] [THROTTLED]
+  0.7        0.574           87           1           1      87620 .TAU application => main [{/home/c_rothschild/nn-parallel-c/src/main.c} {28,0}] => Phase_Init
+  0.7        0.574           87           1           1      87620 Phase_Init
+  0.7           63           87           1       23860      87046 .TAU application => main [{/home/c_rothschild/nn-parallel-c/src/main.c} {28,0}] => Phase_Init => network_init [{/home/c_rothschild/nn-parallel-c/src/network.c} {31,0}]
+  0.7           63           87           1       23860      87046 network_init [{/home/c_rothschild/nn-parallel-c/src/network.c} {31,0}]
+  0.5           60           60       66641           0          1 backprop [{/home/c_rothschild/nn-parallel-c/src/network.c} {258,0}] => backprop => sigmoid_prime [{/home/c_rothschild/nn-parallel-c/src/sigFuncs.c} {11,0}] => sigmoid [{/home/c_rothschild/nn-parallel-c/src/sigFuncs.c} {6,0}]
+  0.2           31           31       33360           0          1 update_mini_batch => backprop [{/home/c_rothschild/nn-parallel-c/src/network.c} {258,0}] => backprop => sigmoid [{/home/c_rothschild/nn-parallel-c/src/sigFuncs.c} {6,0}]
+  0.2           23           23       23860           0          1 main [{/home/c_rothschild/nn-parallel-c/src/main.c} {28,0}] => Phase_Init => network_init [{/home/c_rothschild/nn-parallel-c/src/network.c} {31,0}] => randn [{/home/c_rothschild/nn-parallel-c/src/network.c} {23,0}]
+  0.2           23           23       23860           0          1 randn [{/home/c_rothschild/nn-parallel-c/src/network.c} {23,0}]
+  0.0            1            1           3           0        644 main [{/home/c_rothschild/nn-parallel-c/src/main.c} {28,0}] => Phase_Train => SGD [{/home/c_rothschild/nn-parallel-c/src/network.c} {480,0}] => shuffle [{/home/c_rothschild/nn-parallel-c/src/network.c} {472,0}]
+  0.0            1            1           3           0        644 shuffle [{/home/c_rothschild/nn-parallel-c/src/network.c} {472,0}]
+  0.0        0.496        0.496           2           0        248 .TAU application => main [{/home/c_rothschild/nn-parallel-c/src/main.c} {28,0}] => dataset_destroy [{/home/c_rothschild/nn-parallel-c/src/mnist_loader.c} {87,0}]
+  0.0        0.496        0.496           2           0        248 dataset_destroy [{/home/c_rothschild/nn-parallel-c/src/mnist_loader.c} {87,0}]
+  0.0        0.018        0.018           1           0         18 main [{/home/c_rothschild/nn-parallel-c/src/main.c} {28,0}] => Phase_Train => SGD [{/home/c_rothschild/nn-parallel-c/src/network.c} {480,0}] => workspace_destroy [{/home/c_rothschild/nn-parallel-c/src/network.c} {154,0}]
+  0.0        0.018        0.018           1           0         18 workspace_destroy [{/home/c_rothschild/nn-parallel-c/src/network.c} {154,0}]
+  0.0        0.013        0.013           1           0         13 main [{/home/c_rothschild/nn-parallel-c/src/main.c} {28,0}] => Phase_Train => SGD [{/home/c_rothschild/nn-parallel-c/src/network.c} {480,0}] => workspace_init [{/home/c_rothschild/nn-parallel-c/src/network.c} {114,0}]
+  0.0        0.013        0.013           1           0         13 workspace_init [{/home/c_rothschild/nn-parallel-c/src/network.c} {114,0}]
+  0.0         0.01         0.01           1           0         10 grad_init [{/home/c_rothschild/nn-parallel-c/src/network.c} {400,0}]
+  0.0         0.01         0.01           1           0         10 main [{/home/c_rothschild/nn-parallel-c/src/main.c} {28,0}] => Phase_Train => SGD [{/home/c_rothschild/nn-parallel-c/src/network.c} {480,0}] => grad_init [{/home/c_rothschild/nn-parallel-c/src/network.c} {400,0}]
+  0.0        0.007        0.007           1           0          7 .TAU application => main [{/home/c_rothschild/nn-parallel-c/src/main.c} {28,0}] => network_destroy [{/home/c_rothschild/nn-parallel-c/src/network.c} {87,0}]
+  0.0        0.007        0.007           1           0          7 network_destroy [{/home/c_rothschild/nn-parallel-c/src/network.c} {87,0}]
+  0.0        0.005        0.005           1           0          5 grad_destroy [{/home/c_rothschild/nn-parallel-c/src/network.c} {424,0}]
+  0.0        0.005        0.005           1           0          5 main [{/home/c_rothschild/nn-parallel-c/src/main.c} {28,0}] => Phase_Train => SGD [{/home/c_rothschild/nn-parallel-c/src/network.c} {480,0}] => grad_destroy [{/home/c_rothschild/nn-parallel-c/src/network.c} {424,0}]
+profiles in /home/c_rothschild/nn-parallel-c/tau_1287
