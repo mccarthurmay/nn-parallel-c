@@ -1,4 +1,18 @@
 # neede this to dump mnist into a flat binary to make c loader be able to read it. C cant do gz or pickle easily (or pickle at all i think?)
+
+"""
+Run once. 
+
+Unpacks 'mnist.pkl.gz' and rewrites the data into flat binaries storing them in ../data:
+- test.bin
+- train.bin
+- valid.bin
+
+Each digit file is turned into as follows:
+- 12-byte header
+- pixels -> float32
+- labels -> raw bytes
+"""
 import gzip, pickle, struct
 import numpy as np
  

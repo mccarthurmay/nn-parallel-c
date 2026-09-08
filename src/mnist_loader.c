@@ -9,6 +9,20 @@
 
 
 /*
+mnist_loader.c reads each bin file and converts it into a dataset
+
+'n' examples    and 
+'d' pixels      stored in 
+'float *pixels' array
+
+unsigned char *labels
+
+Pixels become row-major (ex. image i's pixels sit contiguously starting at pixels[i*d])
+*/
+
+
+
+/*
 Load one split written by mnist_loader.py.
 
 File layout: magic, n, d as little-endian uint32, then n*d float32 pixels
