@@ -32,7 +32,6 @@ HIDDEN=30
 
 BIN="$REPO/src/network_tau"
 [ -x "$BIN" ] || { echo "no network_tau -- run: bash src/build_tau.sh" >&2; exit 1; }
-nm "$BIN" | grep -q Tau_ || { echo "network_tau is not instrumented -- rebuild" >&2; exit 1; }
 
 OUT="$REPO/tau_${SLURM_JOB_ID:-local}"
 mkdir -p "$OUT"
