@@ -12,6 +12,7 @@ Gradients are calculated using backpropagation.
 #include "network.h"
 #include "mnist_loader.h"
 #include "sigFuncs.h"
+#include "profiling.h"
 #define PI 3.14159265358979323846
 
 /*

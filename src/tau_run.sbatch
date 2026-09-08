@@ -18,7 +18,7 @@ module load tau papi
 papi_avail | grep -E "PAPI_TOT_INS|PAPI_L1_DCM" || true
 
 
-export TAU_OPTIONS="-optNoCompInst -optVerbose"
+export TAU_OPTIONS="-optCompInst -optVerbose"
 export TAU_METRICS=TIME:PAPI_TOT_INS:PAPI_L1_DCM
 export TAU_PROFILE=1
 export TAU_CALLPATH=1
