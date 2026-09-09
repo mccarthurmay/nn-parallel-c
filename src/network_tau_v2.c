@@ -690,7 +690,7 @@ void update_mini_batch(Network *net, const Dataset *data, const int *idx, int m,
 
 
     // one call for the whole batch, replacing the m separate backprop calls
-    batch_backprop(net, data, idx, m, g->nabla_b, g->nabla_w, bws);
+    batch_backprop(net, data, idx, m, g->nabla_b, g->nabla_w, ws);
 
     // w -= (eta/m) * nabla_w
     // b -= (eta/m) * nabla_b 
