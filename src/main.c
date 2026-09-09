@@ -44,7 +44,7 @@ int main(int argc, char **argv){
 
     if (epochs < 1 || mbs < 1 || eta <= 0.0){
         fprintf(stderr, "all four must be positive\n");
-        fprintf(stderr, USAGE, argv[0], argv[0]);
+        fprintf(stderr, USAGE, argv[0],  argv[0], argv[0]);
         return 1;
     }
     for (int i = 0; i < num_hidden; i++){
