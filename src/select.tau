@@ -2,7 +2,5 @@ BEGIN_EXCLUDE_LIST
 sigmoid
 sigmoid_prime
 cost_derivative
-matmult
-matmult_T
 randn
 END_EXCLUDE_LIST
