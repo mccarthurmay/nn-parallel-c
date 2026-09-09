@@ -57,7 +57,7 @@ Grad *grad_init(const Network *net);
 void grad_destroy(Grad *g);
 
 void update_mini_batch(Network *net, const Dataset *data, const int *idx,
-                       int m, double eta, Grad *g, Workspace *ws);
+                       int m, double eta, Grad *g, BatchWorkspace *ws);
 
 
 int SGD(Network *net, const Dataset *train, int epochs, int mbs, double eta,
@@ -70,5 +70,19 @@ void backprop(const Network *net, const float *x, unsigned char label,
 
 void matmult(const double *w, const double *a, double *result, int rows, int cols);
 void matmult_T(const double *w, const double *a, double *result, int rows, int cols);
+
+typedef struct {
+    int num_layers;
+    int max_batch;
+    double **A;
+    double **Z;
+    double **D;
+} BatchWorkspace;
+BatchWorkspace *batch_workspace_init(const Network *net, int max_batch);
+void batch_workspace_destroy(BatchWorkspace *ws);
+
+void batch_backprop(const Network *net, const Dataset *data, const int *idx, int m,
+                    double **nabla_b, double **nabla_w, BatchWorkspace *ws);
+
 
 #endif
