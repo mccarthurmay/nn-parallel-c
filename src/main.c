@@ -33,7 +33,7 @@ int main(int argc, char **argv){
 
 
     if (argc < 5){
-        fprintf(stderr, USAGE, argv[0], argv[0]);
+        fprintf(stderr, USAGE, argv[0], argv[0], argv[0]);
         return 1;
     }
 
@@ -42,7 +42,7 @@ int main(int argc, char **argv){
     double eta    = atof(argv[3]);
     int num_hidden=argc - 4;
 
-    if (epochs < 1 || mbs < 1 || eta <= 0.0 || hidden < 1){
+    if (epochs < 1 || mbs < 1 || eta <= 0.0){
         fprintf(stderr, "all four must be positive\n");
         fprintf(stderr, USAGE, argv[0], argv[0]);
         return 1;
@@ -52,6 +52,7 @@ int main(int argc, char **argv){
             fprintf(stderr, "hidden layer %d must be positive\n", i + 1);
             return 1;
         }
+    }
 
     // Seed 
     srand(42);
