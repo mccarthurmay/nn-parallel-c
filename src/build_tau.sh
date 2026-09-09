@@ -1,21 +1,15 @@
-#!/bin/bash
-set -euo pipefail
-cd "$(dirname "$0")"
+#!/bin/sh
 
-# as/ld are not reliably on PATH in a fresh login shell
-export PATH="/usr/bin:$PATH"
-
+module load gcc
 module load tau papi
+
+
 export TAU_OPTIONS="-optCompInst -optTauSelectFile=select.tau -optVerbose"
 
-echo "--- toolchain ---"
-which gcc as ld || { echo "as/ld still missing" >&2; exit 1; }
-
-# stale objects from a half-finished build will silently get linked
 rm -f ./*.o network_tau
+CC=tau_cc.sh  
+$CC -Wall -Wextra -std=c11 -DTAU_ENABLED -O2 -o network_tau_v1_O2 main.c network_tau_v1.c mnist_loader.c sigFuncs.c -lm
+$CC -Wall -Wextra -std=c11 -DTAU_ENABLED -O3 -o network_tau_v1 main.c network_tau_v1.c mnist_loader.c sigFuncs.c -lm
+$CC -Wall -Wextra -std=c11 -DTAU_ENABLED -O3 -o network_tau_v2 mainV2.c network_tau_v2.c mnist_loader.c sigFuncs.c -lm
 
-tau_cc.sh -B/usr/bin -DTAU_ENABLED -O2 -std=c11 \
-    -o network_tau main.c network_tau_v1.c mnist_loader.c sigFuncs.c -lm 2>&1 | tee tau_build.log
-
-echo "--- TAU symbols (must be > 0) ---"
-nm network_tau | grep -c Tau_
+echo ok

@@ -30,18 +30,27 @@ BATCH=10
 ETA=3.0
 HIDDEN=30
 
-BIN="$REPO/src/network_tau"
-[ -x "$BIN" ] || { echo "no network_tau -- run: bash src/build_tau.sh" >&2; exit 1; }
+BINS=("$REPO"/src/network_tau_v3)
+# BINS=("$REPO"/src/network_tau_v*)
+[ -e "${BINS[0]}" ] || { echo "no network_tau* binaries found in $REPO/src -- run: bash src/build_tau.sh" >&2; exit 1; }
 
-OUT="$REPO/tau_${SLURM_JOB_ID:-local}"
-mkdir -p "$OUT"
-cd "$OUT"
+for BIN in "${BINS[@]}"; do
+    [ -x "$BIN" ] || { echo "skipping $BIN (not executable)" >&2; continue; }
 
-"$BIN" "$EPOCHS" "$BATCH" "$ETA" "$HIDDEN"
+    NAME=$(basename "$BIN")
+    OUT="$REPO/tau_${SLURM_JOB_ID:-local}_${NAME}"
+    mkdir -p "$OUT"
+    cd "$OUT"
 
-for d in MULTI__*; do
-    echo "=============== $d ==============="
-    ( cd "$d" && pprof -a ) | tee "../$(basename "$d").txt"
+    echo "=== running $NAME ==="
+    "$BIN" "$EPOCHS" "$BATCH" "$ETA" "$HIDDEN"
+
+    for d in MULTI__*; do
+        [ -d "$d" ] || continue
+        echo "--- $NAME: $d ---"
+        ( cd "$d" && pprof -a ) | tee "../$(basename "$d").txt"
+    done
+
+    echo "profiles in $OUT"
+    cd "$REPO"
 done
-
-echo "profiles in $OUT"
