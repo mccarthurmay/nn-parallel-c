@@ -28,30 +28,40 @@ export TAU_CALLPATH_DEPTH=4
 EPOCHS=3
 BATCH=10
 ETA=3.0
-HIDDEN=(30 100)
+HIDDEN_SPECS=("30" "100 30" "30 30 30")
 
-# BINS=("$REPO"/src/network_tau_v3)
-BINS=("$REPO"/src/networkV*)
-[ -e "${BINS[0]}" ] || { echo "no networkV* binaries found in $REPO/src -- run: bash src/build_tau.sh" >&2; exit 1; }
+# collect only executables; the glob would otherwise match .c and .o files too
+BINS=()
+for f in "$REPO"/src/network_tau_v*; do
+    [ -f "$f" ] && [ -x "$f" ] && BINS+=("$f")
+done
+[ ${#BINS[@]} -gt 0 ] || {
+    echo "no network_tau_v* binaries in $REPO/src -- run: bash src/build.sh" >&2
+    exit 1
+}
 
 for BIN in "${BINS[@]}"; do
     [ -x "$BIN" ] || { echo "skipping $BIN (not executable)" >&2; continue; }
 
     NAME=$(basename "$BIN")
-    SHAPE=$(IFS=-; echo "${HIDDEN[@]}")
-    OUT="$REPO/tau_${SLURM_JOB_ID:-local}_${NAME}_${SHAPE}"
-    mkdir -p "$OUT"
-    cd "$OUT"
+    for SPEC in "${HIDDEN_SPECS[@]}"; do
+        read -ra HIDDEN <<< "$SPEC"
 
-    echo "=== running $NAME hidden=[${HIDDEN[*]}] ==="
-    "$BIN" "$EPOCHS" "$BATCH" "$ETA" "${HIDDEN[@]}"
+        SHAPE=$(IFS=-; echo "${HIDDEN[*]}")
+        OUT="$REPO/tau_${SLURM_JOB_ID:-local}_${NAME}_${SHAPE}"
+        mkdir -p "$OUT"
+        cd "$OUT"
 
-    for d in MULTI__*; do
-        [ -d "$d" ] || continue
-        echo "--- $NAME: $d ---"
-        ( cd "$d" && pprof -a ) | tee "../$(basename "$d").txt"
+        echo "=== running $NAME hidden=[${HIDDEN[*]}] ==="
+        "$BIN" "$EPOCHS" "$BATCH" "$ETA" "${HIDDEN[@]}"
+
+        for d in MULTI__*; do
+            [ -d "$d" ] || continue
+            echo "--- $NAME $SHAPE: $d ---"
+            ( cd "$d" && pprof -a ) | tee "../$(basename "$d").txt"
+        done
+
+        echo "profiles in $OUT"
+        cd "$REPO"
     done
-
-    echo "profiles in $OUT"
-    cd "$REPO"
 done
