@@ -18,9 +18,9 @@ fi
 module load gcc
 module load tau papi
 
-papi_avail | grep -E "PAPI_TOT_INS|PAPI_L1_DCM" || true
+papi_avail | grep -E "PAPI_TOT_INS|PAPI_L1_DCM|PAPI_L2_DCM|PAPI_L3_TCM" || true
 
-export TAU_METRICS=TIME:PAPI_TOT_INS:PAPI_L1_DCM
+export TAU_METRICS=TIME:PAPI_L1_DCM:PAPI_L2_DCM:PAPI_L3_TCM
 export TAU_PROFILE=1
 export TAU_CALLPATH=1
 export TAU_CALLPATH_DEPTH=4
