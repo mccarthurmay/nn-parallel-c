@@ -24,7 +24,7 @@ rm -f ./*.o
 $CC -Wall -Wextra -std=c11 -DTAU_ENABLED -O3 -fopenmp -o network_tau_v3 main.c networkV3.c mnist_loader.c sigFuncs.c -lm
 rm -f ./*.o
 
-for b in network_tau_v1 network_tau_v1_O2 network_tau_v2; do
+for b in network_tau_v1 network_tau_v2 network_tau_v3; do
     printf '%s: %s TAU symbols\n' "$b" "$(nm "$b" | grep -c Tau_)"
 done
 
