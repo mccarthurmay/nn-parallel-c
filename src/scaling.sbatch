@@ -87,6 +87,32 @@ for bin in "${BINS[@]}"; do
         done
     done
 
+
+    echo "=== eta sweep (hidden=30, batch=10) ==="
+    for rep in $(seq 1 "$REPS"); do
+        for eta_val in 0.5 1.0 3.0 5.0 10.0; do
+            run "$bin" "$CSV" 30 10 "$eta_val"
+        done
+    done
+
+    echo "=== hidden x batch grid ==="
+    for rep in $(seq 1 "$REPS"); do
+        for hidden in 10 30 50 100 200; do
+            for batch in 1 10 50 100; do
+                run "$bin" "$CSV" "$hidden" "$batch"
+            done
+        done
+    done
+
+    echo "=== hidden x eta grid ==="
+    for rep in $(seq 1 "$REPS"); do
+        for hidden in 10 30 50 100 200; do
+            for eta_val in 0.5 1.0 3.0 5.0; do
+                run_eta "$bin" "$CSV" "$hidden" 10 "$eta_val"
+            done
+        done
+    done
+
     echo
     echo "wrote $CSV"
     column -s, -t < "$CSV"
