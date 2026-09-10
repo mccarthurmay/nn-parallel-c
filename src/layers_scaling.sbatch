@@ -108,16 +108,6 @@ for bin in "${BINS[@]}"; do
 done
 
 : <<'EOF'
-Same idea as scaling.sbatch, but the knob is network DEPTH.
-
-main.c takes <epochs> <batch> <eta> <hidden1> [hidden2 ...] and stacks one
-hidden layer per trailing argument, so passing "32 32 32 32" builds a network
-with four hidden layers of 32 neurons each. run() just repeats <width> <depth>
-times to build that argument list.
-
-Both depth and width go up in powers of two, so a log-log plot of time is a
-straight line and the slope is the scaling exponent.
-
 depth scaling
 depth:  1, 2, 4, 8, 16, 32
 width:  32
@@ -137,10 +127,4 @@ batch size: 10
 epochs trained: 3
 learning rate: 3
 
-All of the above runs once per network_v* binary found in the submit dir.
-
-Note: past ~8 hidden layers, plain sigmoid with no normalization will have
-vanishing gradients and the accuracy column will flatten out near 10%. The
-timing data is still good -- just don't read the deep end as a real accuracy
-trend.
 EOF
