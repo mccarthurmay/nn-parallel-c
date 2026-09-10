@@ -22,7 +22,7 @@ missing accumulations that a finite-difference check would be too loose to see.
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "networkV2.h"
+#include "network.h"
 
 #define TOL_ONE   1e-12   // m = 1: identical arithmetic, only sigmoid' differs
 #define TOL_BATCH 1e-10   // m > 1: summation order differs

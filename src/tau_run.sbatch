@@ -30,8 +30,8 @@ BATCH=10
 ETA=3.0
 HIDDEN=30
 
-BINS=("$REPO"/src/network_tau_v3)
-# BINS=("$REPO"/src/network_tau_v*)
+# BINS=("$REPO"/src/network_tau_v3)
+BINS=("$REPO"/src/network_tau_v*)
 [ -e "${BINS[0]}" ] || { echo "no network_tau* binaries found in $REPO/src -- run: bash src/build_tau.sh" >&2; exit 1; }
 
 for BIN in "${BINS[@]}"; do

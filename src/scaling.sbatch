@@ -52,10 +52,10 @@ run(){
     fi
 
     awk -v h="$hidden" -v b="$batch" -v e="$ETA" -v ep="$EPOCHS" -v th="$THREADS" \
-        -v s="$start" -v f="$end" -v c="$correct" -v t="$total" \
+        -v s="$start" -v f="$end" -v c="$correct" -v t="$total" -v n="$bin"\
         'BEGIN { w = f - s;
-                 printf "%d,%d,%s,%d,%d,%.3f,%.3f,%d,%d,%.4f\n",
-                        h, b, e, ep, th, w, w/ep, c, t, c/t }' >> "$csv"
+                 printf "%s,%d,%d,%s,%d,%d,%.3f,%.3f,%d,%d,%.4f\n",
+                        n, h, b, e, ep, th, w, w/ep, c, t, c/t }' >> "$csv"
 
     printf '  hidden=%-4s batch=%-3s  %ss  %s/%s\n' \
            "$hidden" "$batch" \
@@ -63,11 +63,12 @@ run(){
            "$correct" "$total"
 }
 
+CSV="$SLURM_SUBMIT_DIR/scaling_${SLURM_JOB_ID:-local}.csv"
+echo "network,hidden,batch,eta,epochs,threads,wall_s,s_per_epoch,correct,total,accuracy" > "$CSV"
+
 for bin in "${BINS[@]}"; do
     [ -x "$bin" ] || { echo "skipping $bin (not executable)" >&2; continue; }
 
-    CSV="$SLURM_SUBMIT_DIR/scaling_${SLURM_JOB_ID:-local}_${bin}.csv"
-    echo "hidden,batch,eta,epochs,threads,wall_s,s_per_epoch,correct,total,accuracy" > "$CSV"
 
     echo "########################################"
     echo "### $bin"

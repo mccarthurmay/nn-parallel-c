@@ -9,7 +9,7 @@ Gradients are calculated using backpropagation.
 #include <string.h>
 #include <stdio.h>
 
-#include "networkV2.h"
+#include "network.h"
 #include "mnist_loader.h"
 #include "sigFuncs.h"
 #include "profiling.h"
@@ -680,7 +680,7 @@ ws          Workspace *
             Backprop's scratch, allocated once by SGD. 
     
 */
-void update_mini_batch(Network *net, const Dataset *data, const int *idx, int m, double eta, Grad *g, BatchWorkspace *ws){
+static void update_mini_batch(Network *net, const Dataset *data, const int *idx, int m, double eta, Grad *g, BatchWorkspace *ws){
     // Zero all calls to prevent batch 2 gradient from stacking on batch 1
     for (int l = 0; l < net->num_layers - 1; l++){
         memset(g->nabla_b[l], 0, (size_t)net->sizes[l+1] * sizeof(double));

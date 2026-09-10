@@ -56,9 +56,19 @@ typedef struct {
 Grad *grad_init(const Network *net);
 void grad_destroy(Grad *g);
 
-void update_mini_batch(Network *net, const Dataset *data, const int *idx,
-                       int m, double eta, Grad *g, Workspace *ws);
+typedef struct {
+    int num_layers;
+    int max_batch;
+    double **A;   // num_layers arrays;   A[l] is max_batch x sizes[l]
+    double **Z;   // num_layers-1 arrays; Z[l] is max_batch x sizes[l+1]
+    double **D;   // num_layers-1 arrays; D[l] is max_batch x sizes[l+1]
+} BatchWorkspace;
 
+BatchWorkspace *batch_workspace_init(const Network *net, int max_batch);
+void batch_workspace_destroy(BatchWorkspace *ws);
+
+void batch_backprop(const Network *net, const Dataset *data, const int *idx, int m,
+                    double **nabla_b, double **nabla_w, BatchWorkspace *ws);
 
 int SGD(Network *net, const Dataset *train, int epochs, int mbs, double eta,
         const Dataset *test);
