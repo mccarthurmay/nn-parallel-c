@@ -28,7 +28,7 @@ export TAU_CALLPATH_DEPTH=4
 EPOCHS=3
 BATCH=10
 ETA=3.0
-HIDDEN=30
+HIDDEN=(30 100)
 
 # BINS=("$REPO"/src/network_tau_v3)
 BINS=("$REPO"/src/network_tau_v*)
@@ -38,12 +38,13 @@ for BIN in "${BINS[@]}"; do
     [ -x "$BIN" ] || { echo "skipping $BIN (not executable)" >&2; continue; }
 
     NAME=$(basename "$BIN")
-    OUT="$REPO/tau_${SLURM_JOB_ID:-local}_${NAME}"
+    SHAPE=$(IFS=-; echo "${HIDDEN[@]}")
+    OUT="$REPO/tau_${SLURM_JOB_ID:-local}_${NAME}_${SHAPE}"
     mkdir -p "$OUT"
     cd "$OUT"
 
-    echo "=== running $NAME ==="
-    "$BIN" "$EPOCHS" "$BATCH" "$ETA" "$HIDDEN"
+    echo "=== running $NAME hidden=[${HIDDEN[*]}] ==="
+    "$BIN" "$EPOCHS" "$BATCH" "$ETA" "${HIDDEN[@]}"
 
     for d in MULTI__*; do
         [ -d "$d" ] || continue
