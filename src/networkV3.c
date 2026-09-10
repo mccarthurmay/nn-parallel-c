@@ -821,7 +821,7 @@ r is the outer loop so W[r] stays in L1 across all m examples
 static void batch_forward(const double *A, const double *W, const double *b,
         double *Z, double *Aout, int m, int rows, int cols){
             
-    //Each r only writes to w, everything else is read only
+    // Each r only writes to its own column of Z/Aout
     #pragma omp parallel for schedule(static)
     for (int r = 0; r < rows; r++){
         const double *w = W + (size_t)r * cols;
@@ -884,7 +884,7 @@ once per example.
 static void batch_grad(const double *D, const double *A,
         double *nabla_w, double *nabla_b,
         int m, int rows, int cols){
-    // Each r owns a private contiguous row
+    // Each r owns a private row
     #pragma omp parallel for schedule(static)
     for (int r = 0; r < rows; r++){
         double *nw = nabla_w + (size_t)r * cols;
@@ -897,6 +897,7 @@ static void batch_grad(const double *D, const double *A,
                 nw[c] += dr * a[c];
             }
         }
+        // where nabla here is being added to differently per row
         nabla_b[r] += nb;
     }
 }
