@@ -60,7 +60,7 @@ run(){
     awk -v h="$hidden" -v b="$batch" -v e="$ETA" -v ep="$EPOCHS" -v th="$THREADS" \
         -v s="$start" -v f="$end" -v c="$correct" -v t="$total" -v n="$bin"\
         'BEGIN { w = f - s;
-                 printf "%s,%d,%d,%s,%d,%d,%.3f,%.3f,%d,%d,%.4f\n",
+                 printf "%s,%s,%d,%s,%d,%d,%.3f,%.3f,%d,%d,%.4f\n",
                         n, h, b, e, ep, th, w, w/ep, c, t, c/t }' >> "$csv"
 
     printf '  hidden=%-12s batch=%-3s  %ss  %s/%s\n' \
@@ -82,7 +82,7 @@ for bin in "${BINS[@]}"; do
 
     echo "=== hidden-layer sweep (batch fixed at 10) ==="
     for rep in $(seq 1 "$REPS"); do
-        for hidden in "${HIDDEN_SIZES[@]}"; do
+        for hidden in "${HIDDEN_SPECS[@]}"; do
             run "$bin" "$CSV" "$hidden" "$HIDDEN_SWEEP_BATCH"
         done
     done
