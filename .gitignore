@@ -6,6 +6,7 @@
 # descended into, so src/ has to be re-included explicitly
 !src/
 !tests/
+!output/
 # editor and build leftovers that `!*.*` would otherwise rescue
 *.swp
 *.o
