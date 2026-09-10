@@ -32,7 +32,7 @@ HIDDEN=30
 
 # BINS=("$REPO"/src/network_tau_v3)
 BINS=("$REPO"/src/networkV*)
-[ -e "${BINS[0]}" ] || { echo "no network_tau* binaries found in $REPO/src -- run: bash src/build_tau.sh" >&2; exit 1; }
+[ -e "${BINS[0]}" ] || { echo "no networkV* binaries found in $REPO/src -- run: bash src/build_tau.sh" >&2; exit 1; }
 
 for BIN in "${BINS[@]}"; do
     [ -x "$BIN" ] || { echo "skipping $BIN (not executable)" >&2; continue; }

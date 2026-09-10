@@ -822,7 +822,7 @@ static void batch_forward(const double *A, const double *W, const double *b,
         double *Z, double *Aout, int m, int rows, int cols){
             
     //Each r only writes to w, everything else is read only
-    #pragma parallel for schedule(static)
+    #pragma omp parallel for schedule(static)
     for (int r = 0; r < rows; r++){
         const double *w = W + (size_t)r * cols;
         double br = b[r];
