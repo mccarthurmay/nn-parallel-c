@@ -20,7 +20,7 @@ module load tau papi
 
 papi_avail | grep -E "PAPI_TOT_INS|PAPI_L1_DCM|PAPI_L2_DCM|PAPI_L3_TCM" || true
 
-export TAU_METRICS=TIME:PAPI_L1_DCM:PAPI_L2_DCM:PAPI_L3_TCM
+export TAU_METRICS=TIME:PAPI_L1_DCM:PAPI_L2_DCM:PAPI_L3_TCM:PAPI_TOT_INS
 export TAU_PROFILE=1
 export TAU_CALLPATH=1
 export TAU_CALLPATH_DEPTH=4
@@ -28,11 +28,11 @@ export TAU_CALLPATH_DEPTH=4
 EPOCHS=3
 BATCH=10
 ETA=3.0
-HIDDEN_SPECS=("30" "100 30" "30 30 30")
+HIDDEN_SPECS=("30")
 
 # collect only executables; the glob would otherwise match .c and .o files too
 BINS=()
-for f in "$REPO"/src/network_tau_v*; do
+for f in "$REPO"/src/network_tau_v3; do
     [ -f "$f" ] && [ -x "$f" ] && BINS+=("$f")
 done
 [ ${#BINS[@]} -gt 0 ] || {
