@@ -2,7 +2,11 @@
 """
 Plot the sweeps from scaling.sbatch: hidden-layer architecture and batch size.
 
-    python3 layers_plot.py scaling_1557.csv
+    python3 scaling_plot.py scaling_1557.csv
+    python3 scaling_plot.py scaling_1557.csv network_v3 network_v5
+
+Any networks named after the csv restrict the plot to just those, in the
+order given
 """
 
 import csv
@@ -14,6 +18,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 path = sys.argv[1]
+wanted = sys.argv[2:]
 
 # (network, hidden, batch) -> list of s_per_epoch, one per rep
 times = defaultdict(list)
@@ -28,6 +33,11 @@ with open(path, newline="") as f:
 # average the reps
 avg = {k: sum(v) / len(v) for k, v in times.items()}
 nets = sorted({net for net, _, _ in avg})
+if wanted:
+    missing = [n for n in wanted if n not in nets]
+    if missing:
+        sys.exit(f"not in {path}: {', '.join(missing)}\navailable: {', '.join(nets)}")
+    nets = wanted
 
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
 

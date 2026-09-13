@@ -32,7 +32,7 @@ HIDDEN_SPECS=("30")
 
 # collect only executables; the glob would otherwise match .c and .o files too
 BINS=()
-for f in "$REPO"/src/network_tau_v3; do
+for f in "$REPO"/src/network_tau_v*; do
     [ -f "$f" ] && [ -x "$f" ] && BINS+=("$f")
 done
 [ ${#BINS[@]} -gt 0 ] || {
