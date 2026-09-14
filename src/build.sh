@@ -12,6 +12,7 @@ gcc -Wall -Wextra -std=c11 -O3 -o network_v2 main.c networkV2.c mnist_loader.c s
 gcc -Wall -Wextra -std=c11 -O3 -fopenmp -o network_v3 main.c networkV3.c mnist_loader.c sigFuncs.c -lm
 gcc -Wall -Wextra -std=c11 -O3 -fopenmp -o network_v4 main.c networkV4.c mnist_loader.c sigFuncs.c -lm
 gcc -Wall -Wextra -std=c11 -O3 -fopenmp -o network_v5 main.c networkV5.c mnist_loader.c sigFuncs.c -lm
+gcc -Wall -Wextra -std=c11 -O3 -fopenmp -o network_v6 main.c networkV6.c mnist_loader.c sigFuncs.c -lm
 
 export TAU_OPTIONS="-optCompInst -optTauSelectFile=select.tau -optVerbose"
 
@@ -28,6 +29,8 @@ rm -f ./*.o
 $CC -Wall -Wextra -std=c11 -DTAU_ENABLED -O3 -fopenmp -o network_tau_v4 main.c networkV4.c mnist_loader.c sigFuncs.c -lm
 rm -f ./*.o
 $CC -Wall -Wextra -std=c11 -DTAU_ENABLED -O3 -fopenmp -o network_tau_v5 main.c networkV5.c mnist_loader.c sigFuncs.c -lm
+rm -f ./*.o
+$CC -Wall -Wextra -std=c11 -DTAU_ENABLED -O3 -fopenmp -o network_tau_v6 main.c networkV6.c mnist_loader.c sigFuncs.c -lm
 rm -f ./*.o
 
 for b in network_tau_v1 network_tau_v2 network_tau_v3; do
