@@ -36,7 +36,7 @@ for net, hidden in sorted({(n, h) for n, h, _ in avg}):
     ax2.plot(cores, [base / s for s in secs], "o-", label=label)
 
 cores = sorted({c for _, _, c in avg})
-ax2.plot(cores, cores, "k--", alpha=0.4, label="ideal")
+
 
 ax1.set_ylabel("seconds per epoch")
 ax1.set_title("strong scaling: wall time")
